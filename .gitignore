@@ -1,0 +1,9 @@
+.cache
+*0.f*
+*.nek5000
+*.log
+log.*
+
+# mesh formats
+*.re2
+*.exo
