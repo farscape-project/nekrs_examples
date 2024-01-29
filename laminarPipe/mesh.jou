@@ -1,26 +1,22 @@
 #!python
 
-# set working directory
-
-cubit.cmd('cd "/home/rupert/Documents/Projects/Digital_Tools/nekRS/2024_FARSCAPE/problems"')
-
 # create geometry and add to block 1
 
-cubit.cmd('create Cylinder height 10 radius 1 ')
+cubit.cmd('create Cylinder height 5 radius 0.5')
 cubit.cmd('block 1 add vol 1')
 
 # create boundary layers
 
 cubit.cmd('undo group begin')
 cubit.cmd('create boundary_layer 1')
-cubit.cmd('modify boundary_layer 1 uniform height 0.05 growth 1.2 layers 3 ')
+cubit.cmd('modify boundary_layer 1 uniform height 0.025 growth 1.2 layers 3 ')
 cubit.cmd('modify boundary_layer 1 add surface 1 volume 1 ')
 cubit.cmd('modify boundary_layer 1 continuity on')
 cubit.cmd('undo group end')
 
 # set mesh sizing and schemes
 
-cubit.cmd('volume 1  size 0.1')
+cubit.cmd('volume 1  size 0.05')
 cubit.cmd('surface 2 3  scheme pave')
 cubit.cmd('volume 1  redistribute nodes off ')
 cubit.cmd('volume 1  scheme Sweep  source surface 3    target surface 2   sweep transform least squares ')
@@ -54,5 +50,5 @@ cubit.cmd('undo group end')
 cubit.cmd('undo group begin')
 cubit.cmd('set exodus netcdf4 off')
 cubit.cmd('set large exodus file on')
-cubit.cmd('export mesh "/home/rupert/Documents/Projects/Digital_Tools/nekRS/2024_FARSCAPE/problems/Case1_Laminar/test.exo"  overwrite ')
+cubit.cmd('export mesh "mesh.exo"  overwrite ')
 cubit.cmd('undo group end')

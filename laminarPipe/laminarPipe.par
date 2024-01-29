@@ -2,8 +2,8 @@
 polynomialOrder = 3
 
 stopAt = endTime
-endTime = 10
-dt = 0.005
+endTime = 5
+dt = 0.0025
 timeStepper = tombo2
 subCyclingSteps = 0
 
@@ -26,8 +26,7 @@ density = 1.0
 residualTol = 1e-06
 
 [CASEDATA]
-r_pipe = 1.0                # pipe radius
-u_inflow = 1.0              # inlet flow rate
-p_outlet = 0.0              # outlet pressure
-c_x0 = 0                    # x centre
-c_y0 = 0                    # y centre
+r_pipe = 0.5      # pipe radius
+u_inflow = 1.0    # inlet flow rate
+c_x0 = 0.0        # x centre
+c_y0 = 0.0        # y centre

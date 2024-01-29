@@ -1,2 +1,3 @@
 # nekrs_examples
-Documented example cases for NekRS and Cardinal
+
+This repository contains a set of documented example cases for running problems with NekRS, and coupling to MOOSE using Cardinal.
