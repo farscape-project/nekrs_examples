@@ -1,0 +1,150 @@
+# create monoblock main section
+
+brick x 0.023 y 0.0233 z 0.012
+
+# create monoblock top and move into position
+
+brick x 0.023 y 0.0077 z 0.012
+move volume 2 location surface 5 include_merged
+move volume 2 y 0.00385 include_merged
+
+# create pipe outer
+
+create cylinder height 0.1 radius 0.0085
+
+# create fluid region
+
+create cylinder height 0.1 radius 0.006
+
+# carve fluid region out from pipe
+
+subtract volume 4 from volume 3 keep_tool
+
+# carve pipe region from monoblock
+
+subtract volume 3 4 from volume 1 keep_tool
+vol 5 id 1
+
+# rename volumes
+
+volume 1 rename "armour_main"
+volume 2 rename "armour_top"
+volume 3 rename "solid_pipe"
+volume 4 rename "fluid"
+
+# add volumes to named blocks
+
+set duplicate block elements off
+undo group begin
+block 1 add volume 1 2
+block 1 name "armour"
+undo group end
+set duplicate block elements off
+undo group begin
+block 2 add volume 3
+undo group end
+set duplicate block elements off
+undo group begin
+block 2 add volume 3
+undo group end
+set duplicate block elements off
+undo group begin
+block 2 add volume 3
+block 2 name "solid_pipe"
+undo group end
+set duplicate block elements off
+undo group begin
+block 3 add volume 4
+block 3 name "fluid"
+undo group end
+
+# imprint and merge
+
+undo group begin
+imprint volume all
+merge volume all
+undo group end
+
+# create the mesh
+
+undo group begin
+create boundary_layer 1
+modify boundary_layer 1 uniform height 0.0005 growth 1.2 layers 4
+modify boundary_layer 1 add surface 16 volume 4
+modify boundary_layer 1 continuity off
+undo group end
+
+volume 4 3 1 2 size 0.001
+
+volume 4 redistribute nodes off
+volume 4 scheme Sweep sweep transform least squares
+volume 4 autosmooth target on fixed imprints off smart smooth off
+mesh volume 4
+volume 3 redistribute nodes off
+volume 3 scheme Sweep sweep transform least squares
+volume 3 autosmooth target on fixed imprints off smart smooth off
+mesh volume 3
+volume 1 redistribute nodes off
+volume 1 scheme Sweep sweep transform least squares
+volume 1 autosmooth target on fixed imprints off smart smooth off
+mesh volume 1
+volume 2 redistribute nodes off
+volume 2 scheme Sweep sweep transform least squares
+volume 2 autosmooth target on fixed imprints off smart smooth off
+mesh volume 2
+
+# fluid: add surfaces to named sidesets
+
+undo group begin
+sideset 1 add surface 18
+sideset 1 name "inlet"
+undo group end
+undo group begin
+sideset 2 add surface 17
+sideset 2 name "outlet"
+undo group end
+undo group begin
+sideset 3 add surface 16
+sideset 3 name "fluid_solid_interface"
+undo group end
+
+# save fluid mesh
+
+undo group begin
+set exodus netcdf4 off
+set large exodus file on
+export mesh "monoblock_fluid.exo" block 3 overwrite
+undo group end
+
+# clear sidesets and delete fluid volume
+
+# fix interface sideset not being added to solid mesh
+delete volume 4
+delete sideset 1 2 3 4
+
+# solid: surfaces to named sidesets
+
+undo group begin
+sideset 1 add surface 20 21 25 27
+sideset 1 name "pipe_exterior"
+undo group end
+undo group begin
+sideset 2 add surface 16
+sideset 2 name "fluid_solid_interface"
+undo group end
+undo group begin
+sideset 3 add surface 3 4 6 7 8 10 12 22 23
+sideset 3 name "monoblock_exterior"
+undo group end
+undo group begin
+sideset 4 add surface 11
+sideset 4 name "monoblock_top"
+undo group end
+
+# save solid mesh
+
+undo group begin
+set exodus netcdf4 off
+set large exodus file on
+export mesh "monoblock_solid.exo" block 1 2 overwrite
+undo group end
