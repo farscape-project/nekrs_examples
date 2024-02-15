@@ -1,9 +1,23 @@
+# Initial and boundary condition parameters
+initial_temp = 20 # [degC]
+heat_flux = 1e7   # [W/m^2]
+
+# Material properties
+armour_thermal_conductivity = 170.0  # Tungsten [W.m^-1.K^-1]
+pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
+
+# -----------------------------------------------------
+
 [Mesh]
+  [solid_mesh]
+    type = FileMeshGenerator
+    file = 'monoblock_solid.exo'
+  []
 []
 
 [Variables]
   [T]
-    initial_condition = 500.0
+    initial_condition = ${initial_temp}
   []
 []
 
@@ -19,18 +33,29 @@
     type = MatchedValueBC
     variable = T
     v = nek_temp
-    boundary = '5 10' # change these to be the correct IDs
+    boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
+  []
+  [heat_flux_in]
+    type = NeumannBC
+    variable = T
+    boundary = 4
+    value = ${heat_flux}
   []
 []
 
 [Materials]
-  # need to set some conductivities in here
-  # [pellet]
-  #   type = HeatConductionMaterial
-  #   thermal_conductivity_temperature_function = k_U
-  #   temp = T
-  #   block = '2 3'
-  # []
+  [armour]
+    type = GenericConstantMaterial
+    prop_names = 'thermal_conductivity'
+    prop_values = '${armour_thermal_conductivity}'
+    block = 1
+  []
+  [pipe]
+    type = GenericConstantMaterial
+    prop_names = 'thermal_conductivity'
+    prop_values = '${pipe_thermal_conductivity}'
+    block = 2
+  []
 []
 
 [Postprocessors]
@@ -38,7 +63,7 @@
     type = SideDiffusiveFluxIntegral
     diffusivity = thermal_conductivity
     variable = T
-    boundary = '5 10' # change these to be the correct IDs
+    boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
   [max_fuel_T]
     type = NodalExtremeValue
@@ -92,7 +117,7 @@
 
 [AuxVariables]
   [nek_temp]
-    initial_condition = 500.0
+    initial_condition = ${initial_temp}
   []
   [avg_flux]
     family = MONOMIAL
@@ -107,7 +132,7 @@
     component = normal
     diffusivity = thermal_conductivity
     variable = avg_flux
-    boundary = '5 10' # change these to be the correct IDs
+    boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
 []
 

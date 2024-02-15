@@ -1,0 +1,40 @@
+//
+// nekRS User Defined File
+//
+#include "udf.hpp"
+
+static dfloat R_PIPE;
+static dfloat U_INFLOW;
+static dfloat P_OUTLET;
+static dfloat C_X0;
+static dfloat C_Y0;
+
+#ifdef __okl__
+
+#include "monoblock.oudf"
+
+#endif
+
+void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+{
+}
+
+void UDF_LoadKernels(occa::properties& kernelInfo)
+{
+	kernelInfo["defines/rPipe"]		= R_PIPE;
+	kernelInfo["defines/uInflow"]	= U_INFLOW;
+	kernelInfo["defines/cx0"]			= C_X0;
+	kernelInfo["defines/cy0"]			= C_Y0;
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+	platform->par->extract("casedata","r_pipe",R_PIPE);
+	platform->par->extract("casedata","u_inflow",U_INFLOW);
+	platform->par->extract("casedata","c_x0",C_X0);
+	platform->par->extract("casedata","c_y0",C_Y0);
+}
+
+void UDF_Setup(nrs_t* nrs)
+{
+}

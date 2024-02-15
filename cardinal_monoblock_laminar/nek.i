@@ -1,6 +1,6 @@
 [Mesh]
   type = NekRSMesh
-  boundary = '3'  # NekRS mesh boundary ID 3
+  boundary = 3  # NekRS mesh boundary ID 3
 []
 
 [Problem]
@@ -25,7 +25,7 @@
 [Postprocessors]
   [flux_in_nek]
     type = NekHeatFluxIntegral
-    boundary = '3'  # NekRS mesh boundary ID 3
+    boundary = 3  # NekRS mesh boundary ID of fluid-solid interface
   []
   [max_nek_T]
     type = NekVolumeExtremeValue

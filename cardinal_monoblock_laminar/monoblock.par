@@ -1,0 +1,42 @@
+[OCCA]
+backend = CPU                   # for testing; for N=1 can run on 4 CPUs
+
+[GENERAL]
+polynomialOrder = 1             # for testing; does converge with this for p, U only solve
+                                # not tested this for temperature but expect it to be fine
+                                # may not need to increase for the current mesh
+
+stopAt = endTime
+endTime = 8
+dt = 4.0e-3
+timeStepper = tombo2
+subCyclingSteps = 0
+writeControl = simulationTime
+writeInterval = 1               # simulation output time interval
+
+[MESH]
+solver = none                   # no moving mesh solve
+file = "monoblock_fluid.re2"
+connectivityTol = 0.0002        # absolute mesh connectivity tolerance
+
+[PRESSURE]
+residualTol = 5e-06             # absolute pressure tolerance
+
+[VELOCITY]
+boundaryTypeMap = v, o, w       # velocity inlet, pressure outlet, no-slip walls
+viscosity = 8.90e-4             # dynamic viscosity (water)
+density = 997.0                 # density (water)
+residualTol = 7.5e-09           # absolute velocity tolerance
+
+[TEMPERATURE]
+conductivity = 0.6              # water thermal conductivity
+rhoCp = 4173442.0               # (rho*Cp) Cp is volumetric specific heat capacity
+boundaryTypeMap = t, f, o       # fixed T inlet, flux walls, zero gradient outlet (equivalent to i, insulated)
+residualTol = 1.0e-7            # absolute temperature tolerance
+
+
+[CASEDATA]
+r_pipe = 0.006                  # pipe radius
+u_inflow = 7.5e-3               # inlet mean velocity
+c_x0 = 0.0                      # x centre
+c_y0 = 0.0                      # y centre
