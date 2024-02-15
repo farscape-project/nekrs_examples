@@ -8,3 +8,6 @@ log.*
 *.re2
 *.exo
 *.e
+
+# editors
+.vscode
