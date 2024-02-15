@@ -27,6 +27,6 @@ residualTol = 1e-06
 
 [CASEDATA]
 r_pipe = 0.5      # pipe radius
-u_inflow = 1.0    # inlet flow rate
+u_inflow = 1.0    # inlet mean velocity
 c_x0 = 0.0        # x centre
 c_y0 = 0.0        # y centre
