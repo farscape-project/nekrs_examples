@@ -17,26 +17,29 @@ writeInterval = 1               # simulation output time interval
 [MESH]
 solver = none                   # no moving mesh solve
 file = "monoblock_fluid.re2"
-connectivityTol = 0.0002        # absolute mesh connectivity tolerance
+connectivityTol = 0.0002        # absolute mesh connectivity tolerance [m]
 
 [PRESSURE]
-residualTol = 5e-06             # absolute pressure tolerance
+residualTol = 5e-06             # absolute pressure tolerance [Pa]
 
 [VELOCITY]
 boundaryTypeMap = v, o, w       # velocity inlet, pressure outlet, no-slip walls
-viscosity = 8.90e-4             # dynamic viscosity (water)
-density = 997.0                 # density (water)
-residualTol = 7.5e-09           # absolute velocity tolerance
+viscosity = 8.90e-4             # dynamic viscosity (water) [Pa.s]
+density = 997.0                 # density (water) [kg.m^-3]
+residualTol = 7.5e-09           # absolute velocity tolerance [m/s]
 
 [TEMPERATURE]
 conductivity = 0.6              # water thermal conductivity
-rhoCp = 4173442.0               # (rho*Cp) Cp is volumetric specific heat capacity
-boundaryTypeMap = t, f, o       # fixed T inlet, flux walls, zero gradient outlet (equivalent to i, insulated)
-residualTol = 1.0e-7            # absolute temperature tolerance
+rhoCp = 4173442.0               # rho*Cp where Cp is volumetric specific heat capacity [kg.m^-3 * J.kg^-1.K^-1]
+boundaryTypeMap = t, o, f       # fixed T inlet, zero gradient outlet (equivalent to i, insulated), flux walls
+residualTol = 1.0e-7            # absolute temperature tolerance [degC or K]
 
 
 [CASEDATA]
-r_pipe = 0.006                  # pipe radius
-u_inflow = 7.5e-3               # inlet mean velocity
-c_x0 = 0.0                      # x centre
-c_y0 = 0.0                      # y centre
+r_pipe = 0.006                  # pipe radius [m]
+u_inflow = 7.5e-3               # inlet mean velocity [m/s]
+u_init = 7.5e-3                 # initial mean velocity [m/s]
+T_inflow = 20                   # inlet temperature [degC]
+T_init = 10                     # initial temperature [degC]
+c_x0 = 0.0                      # x centre [m]
+c_y0 = 0.0                      # y centre [m]

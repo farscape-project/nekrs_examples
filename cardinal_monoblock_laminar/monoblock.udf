@@ -5,15 +5,25 @@
 
 static dfloat R_PIPE;
 static dfloat U_INFLOW;
+static dfloat U_INIT;
+static dfloat T_INFLOW;
+static dfloat T_INIT;
 static dfloat P_OUTLET;
 static dfloat C_X0;
 static dfloat C_Y0;
 
 #ifdef __okl__
 
+// source the user-defined OCCA kernels
 #include "monoblock.oudf"
 
 #endif
+
+dfloat velocity_profile(dfloat u, dfloat x0, dfloat y0, dfloat x, dfloat y, dfloat rPipe)
+{
+	// calculate parabolic velocity profile
+	return -(2*u)*(1 - (( ((x-x0)*(x-x0))+((y-y0)*(y-y0)) )/(rPipe*rPipe)));
+}
 
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
@@ -21,20 +31,54 @@ void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 
 void UDF_LoadKernels(occa::properties& kernelInfo)
 {
+	// Pass variables to oudf
 	kernelInfo["defines/rPipe"]		= R_PIPE;
 	kernelInfo["defines/uInflow"]	= U_INFLOW;
+	kernelInfo["defines/TInflow"]		= T_INFLOW;
 	kernelInfo["defines/cx0"]			= C_X0;
 	kernelInfo["defines/cy0"]			= C_Y0;
 }
 
 void UDF_Setup0(MPI_Comm comm, setupAide &options)
 {
+	// called once before initialising NekRS
+
+	// load custom parameters set in .par/[CASEDATA]
+	// note 2nd argument is name in [CASEDATA],
+	// 3rd is a variable declared in .udf where the value will be stored
+	// see static dfloat declarations at the top
 	platform->par->extract("casedata","r_pipe",R_PIPE);
 	platform->par->extract("casedata","u_inflow",U_INFLOW);
+	platform->par->extract("casedata","u_init",U_INIT);
+	platform->par->extract("casedata","T_inflow",T_INFLOW);
+	platform->par->extract("casedata","T_init",T_INIT);
 	platform->par->extract("casedata","c_x0",C_X0);
 	platform->par->extract("casedata","c_y0",C_Y0);
 }
 
 void UDF_Setup(nrs_t* nrs)
 {
+	// Called once after initialising the mesh, boundary fields etc.
+
+	// set initial conditions for the velocity, temperature, and pressure
+  mesh_t * mesh = nrs->cds->mesh[0];
+
+  float inlet_vel = U_INFLOW;
+
+  // loop over all the GLL points and assign directly to the solution arrays by
+  // indexing according to the field offset necessary to hold the data for each
+  // solution component
+  int n_gll_points = mesh->Np * mesh->Nelements;
+
+	for (int n = 0; n < n_gll_points; ++n)
+  {
+		float u_z = velocity_profile(U_INIT, C_X0, C_Y0, mesh->x[n], mesh->y[n], R_PIPE);
+    nrs->U[n + 0 * nrs->fieldOffset] = 0.0;
+    nrs->U[n + 1 * nrs->fieldOffset] = 0.0;
+    nrs->U[n + 2 * nrs->fieldOffset] = u_z;
+
+    nrs->P[n] = 0.0;
+
+    nrs->cds->S[n + 0 * nrs->cds->fieldOffset[0]] = T_INIT;
+  }
 }
