@@ -1,6 +1,6 @@
 # Initial and boundary condition parameters
 initial_temp = 20 # [degC]
-heat_flux = 1e7   # [W/m^2]
+heat_flux = 1e2   # [W/m^2]
 
 # Material properties
 armour_thermal_conductivity = 170.0  # Tungsten [W.m^-1.K^-1]
@@ -65,7 +65,7 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
     variable = T
     boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
-  [max_fuel_T]
+  [max_solid_T]
     type = NodalExtremeValue
     variable = T
     value_type = max
@@ -138,15 +138,15 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
 
 [Executioner]
   type = Transient
-  dt = 5e-3 # change timestepping
+  dt = 8e-2 # change timestepping
   num_steps = 10 # change timestepping
-  nl_abs_tol = 1e-5 # change tolerances
-  nl_rel_tol = 1e-16 # change tolerances
+  nl_abs_tol = 1e-5 # change tolerances?
+  nl_rel_tol = 1e-16 # change tolerances?
   petsc_options_value = 'hypre boomeramg'
   petsc_options_iname = '-pc_type -pc_hypre_type'
 []
 
 [Outputs]
   exodus = true
-  execute_on = 'final' # could look at other options for this
+  execute_on = 'timestep_end'
 []
