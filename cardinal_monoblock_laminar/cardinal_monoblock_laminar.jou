@@ -69,12 +69,15 @@ undo group end
 
 undo group begin
 create boundary_layer 1
-modify boundary_layer 1 uniform height 0.0005 growth 1.2 layers 4
+modify boundary_layer 1 uniform height 0.0004 growth 1.1 layers 4
 modify boundary_layer 1 add surface 16 volume 4
 modify boundary_layer 1 continuity off
 undo group end
 
-volume 4 3 1 2 size 0.001
+volume 1 2 3 4 size 0.001
+surface 21 scheme hole rad_intervals 3
+surf 18 21 size 0.001
+mesh surface 18 21
 
 volume 4 redistribute nodes off
 volume 4 scheme Sweep sweep transform least squares
@@ -92,6 +95,10 @@ volume 2 redistribute nodes off
 volume 2 scheme Sweep sweep transform least squares
 volume 2 autosmooth target on fixed imprints off smart smooth off
 mesh volume 2
+
+# set 2nd order mesh elements
+
+block 1 2 3 element type HEX20
 
 # fluid: add surfaces to named sidesets
 
@@ -120,7 +127,7 @@ undo group end
 
 # fix interface sideset not being added to solid mesh
 delete volume 4
-delete sideset 1 2 3 4
+delete sideset 1 2 3
 
 # solid: surfaces to named sidesets
 
@@ -134,11 +141,11 @@ sideset 2 name "fluid_solid_interface"
 undo group end
 undo group begin
 sideset 3 add surface 3 4 6 7 8 10 12 22 23
-sideset 3 name "monoblock_exterior"
+sideset 3 name "armour_exterior"
 undo group end
 undo group begin
 sideset 4 add surface 11
-sideset 4 name "monoblock_top"
+sideset 4 name "armour_top"
 undo group end
 
 # save solid mesh
