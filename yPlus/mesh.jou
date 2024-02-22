@@ -1,0 +1,54 @@
+#!python
+
+# create geometry and add to block 1
+
+cubit.cmd('create Cylinder height 5 radius 0.5')
+cubit.cmd('block 1 add vol 1')
+
+# create boundary layers
+
+cubit.cmd('undo group begin')
+cubit.cmd('create boundary_layer 1')
+cubit.cmd('modify boundary_layer 1 uniform height 0.025 growth 1.2 layers 3 ')
+cubit.cmd('modify boundary_layer 1 add surface 1 volume 1 ')
+cubit.cmd('modify boundary_layer 1 continuity on')
+cubit.cmd('undo group end')
+
+# set mesh sizing and schemes
+
+cubit.cmd('volume 1  size 0.05')
+cubit.cmd('surface 2 3  scheme pave')
+cubit.cmd('volume 1  redistribute nodes off ')
+cubit.cmd('volume 1  scheme Sweep  source surface 3    target surface 2   sweep transform least squares ')
+cubit.cmd('volume 1  autosmooth target on  fixed imprints off  smart smooth off ')
+
+# change element type to hex20
+
+cubit.cmd('block 1 element type hex20')
+
+# mesh geometry
+
+cubit.cmd('mesh volume 1 ')
+
+# create named sidesets
+
+cubit.cmd('undo group begin')
+cubit.cmd('sideset 1 add surface 3  ')
+cubit.cmd('sideset 1 name "inlet"')
+cubit.cmd('undo group end')
+cubit.cmd('undo group begin')
+cubit.cmd('sideset 2 add surface 2  ')
+cubit.cmd('sideset 2 name "outlet"')
+cubit.cmd('undo group end')
+cubit.cmd('undo group begin')
+cubit.cmd('sideset 3 add surface 1  ')
+cubit.cmd('sideset 3 name "walls"')
+cubit.cmd('undo group end')
+
+# export the mesh
+
+cubit.cmd('undo group begin')
+cubit.cmd('set exodus netcdf4 off')
+cubit.cmd('set large exodus file on')
+cubit.cmd('export mesh "mesh.exo"  overwrite ')
+cubit.cmd('undo group end')
