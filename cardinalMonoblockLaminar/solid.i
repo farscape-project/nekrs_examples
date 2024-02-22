@@ -1,6 +1,6 @@
 # Initial and boundary condition parameters
-initial_temp = 500 # [degC]
-heat_flux = 1e3   # [W/m^2]
+initial_temp = 300 # [degC]
+heat_flux = 1e5   # [W/m^2]
 
 # Material properties
 armour_thermal_conductivity = 170.0  # Tungsten [W.m^-1.K^-1]
@@ -35,18 +35,18 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
     v = nek_temp
     boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
-  # [heat_flux_in]
-  #   type = NeumannBC
-  #   variable = T
-  #   boundary = 4
-  #   value = ${heat_flux}
-  # []
-  [hot_top_surface]
-    type = DirichletBC
+  [heat_flux_in]
+    type = NeumannBC
     variable = T
     boundary = 4
-    value = 700
+    value = ${heat_flux}
   []
+  #[hot_top_surface]
+  #  type = DirichletBC
+  #  variable = T
+  #  boundary = 4
+  #  value = 700
+  #[]
 []
 
 [Materials]
@@ -144,7 +144,7 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
 
 [Executioner]
   type = Transient
-  dt = 8e-2 # change timestepping
+  dt = 4e-2 # change timestepping
   num_steps = 10 # change timestepping
   nl_abs_tol = 1e-5 # change tolerances?
   nl_rel_tol = 1e-16 # change tolerances?

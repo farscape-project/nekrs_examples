@@ -12,7 +12,7 @@ dt = 4.0e-3
 timeStepper = tombo2
 subCyclingSteps = 0
 writeControl = simulationTime
-writeInterval = 1               # simulation output time interval
+writeInterval = 4.0e-2               # simulation output time interval
 
 [MESH]
 solver = none                   # no moving mesh solve
@@ -39,7 +39,7 @@ residualTol = 1.0e-7            # absolute temperature tolerance [degC or K]
 r_pipe = 0.006                  # pipe radius [m]
 u_inflow = 7.5e-3               # inlet mean velocity [m/s]
 u_init = 7.5e-3                 # initial mean velocity [m/s]
-T_inflow = 300                   # inlet temperature [degC]
-T_init = 300                     # initial temperature [degC]
+T_inflow = 350                   # inlet temperature [degC]
+T_init = 350                     # initial temperature [degC]
 c_x0 = 0.0                      # x centre [m]
 c_y0 = 0.0                      # y centre [m]
