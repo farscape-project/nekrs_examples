@@ -6,7 +6,7 @@
 [Problem]
   type = NekRSProblem
   casename = 'monoblock'
-  synchronization_interval = parent_app  # For avoiding unnecessary synchronisations
+  # synchronization_interval = parent_app  # For avoiding unnecessary synchronisations
 []
 
 [Executioner]

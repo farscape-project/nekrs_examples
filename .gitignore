@@ -11,3 +11,8 @@ log.*
 
 # editors
 .vscode
+
+# postprocessing
+*.png
+*.jpg
+*.jpeg

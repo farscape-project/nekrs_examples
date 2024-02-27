@@ -1,10 +1,15 @@
 # Initial and boundary condition parameters
-initial_temp = 300 # [degC]
-heat_flux = 1e5   # [W/m^2]
+solid_initial_temp = 500 # [degC]
+fluid_initial_temp = 350 # [degC]
+# heat_flux = 1e5   # [W/m^2]
 
 # Material properties
-armour_thermal_conductivity = 170.0  # Tungsten [W.m^-1.K^-1]
-pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
+armour_thermal_conductivity = 170.0   # Tungsten [W.m^-1.K^-1]
+armour_heat_capacity = 134   # Tungsten [J.kg^-1.K^-1]
+armour_density = 19300                # Tungsten [kg.m^-3]
+pipe_thermal_conductivity = 400.0     # Copper [W.m^-1.K^-1]
+pipe_heat_capacity = 385     # Copper [J.kg^-1.K^-1]
+pipe_density = 8940                   # Copper [kg.m^-3]
 
 # -----------------------------------------------------
 
@@ -17,13 +22,17 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
 
 [Variables]
   [T]
-    initial_condition = ${initial_temp}
+    initial_condition = ${solid_initial_temp}
   []
 []
 
 [Kernels]
   [diffusion]
     type = HeatConduction
+    variable = T
+  []
+  [heat_time_derivative]  # heat time derivative
+    type = SpecificHeatConductionTimeDerivative
     variable = T
   []
 []
@@ -35,33 +44,48 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
     v = nek_temp
     boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
-  [heat_flux_in]
-    type = NeumannBC
+  # [heat_flux_in]
+  #   type = NeumannBC
+  #   variable = T
+  #   boundary = 4
+  #   value = ${heat_flux}
+  # []
+  [hot_top_surface]
+    type = DirichletBC
     variable = T
     boundary = 4
-    value = ${heat_flux}
+    value = 700
   []
-  #[hot_top_surface]
-  #  type = DirichletBC
-  #  variable = T
-  #  boundary = 4
-  #  value = 700
-  #[]
 []
 
 [Materials]
   [armour]
     type = HeatConductionMaterial
     thermal_conductivity = '${armour_thermal_conductivity}'
+    heat_capacity = '${armour_heat_capacity}' # heat time derivative
     temp = T
     block = 1
   []
   [pipe]
     type = HeatConductionMaterial
     thermal_conductivity = '${pipe_thermal_conductivity}'
+    heat_capacity = '${pipe_heat_capacity}' # heat time derivative
     temp = T
     block = 2
   []
+  [armour_density_material] # heat time derivative
+    type = GenericConstantMaterial
+    block = 1
+    prop_names = density
+    prop_values = '${armour_density}'
+  []
+  [pipe_density_material] # heat time derivative
+    type = GenericConstantMaterial
+    block = 2
+    prop_names = density
+    prop_values = '${pipe_density}'
+  []
+
 []
 
 [Postprocessors]
@@ -76,10 +100,10 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
     variable = T
     value_type = max
   []
-  [synchronize]  # For avoiding unnecessary synchronisations
-    type = Receiver
-    default = 1
-  []
+  # [synchronize]  # For avoiding unnecessary synchronisations
+  #   type = Receiver
+  #   default = 1
+  # []
 []
 
 [MultiApps]
@@ -113,17 +137,17 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
     from_postprocessor = flux_integral
     to_multi_app = nek
   []
-  [synchronize_in] # For avoiding unnecessary synchronisations
-    type = MultiAppPostprocessorTransfer
-    to_postprocessor = transfer_in
-    from_postprocessor = synchronize
-    to_multi_app = nek
-  []
+  # [synchronize_in] # For avoiding unnecessary synchronisations
+  #   type = MultiAppPostprocessorTransfer
+  #   to_postprocessor = transfer_in
+  #   from_postprocessor = synchronize
+  #   to_multi_app = nek
+  # []
 []
 
 [AuxVariables]
   [nek_temp]
-    initial_condition = ${initial_temp}
+    initial_condition = ${fluid_initial_temp}
   []
   [avg_flux]
     family = MONOMIAL
@@ -144,8 +168,10 @@ pipe_thermal_conductivity = 400.0    # Copper [W.m^-1.K^-1]
 
 [Executioner]
   type = Transient
-  dt = 4e-2 # change timestepping
-  num_steps = 10 # change timestepping
+  # dt = 4e-3 # change timestepping
+  # num_steps = 10 # change timestepping
+  dt = 4e-4 # change timestepping
+  num_steps = 100 # change timestepping
   nl_abs_tol = 1e-5 # change tolerances?
   nl_rel_tol = 1e-16 # change tolerances?
   petsc_options_value = 'hypre boomeramg'

@@ -8,11 +8,12 @@ polynomialOrder = 3             # for testing; does converge with this for p, U 
 
 stopAt = endTime
 endTime = 8
-dt = 4.0e-3
+#dt = 4.0e-3
+dt = 4.0e-4
 timeStepper = tombo2
 subCyclingSteps = 0
 writeControl = simulationTime
-writeInterval = 4.0e-2               # simulation output time interval
+writeInterval = 4.0e-3               # simulation output time interval
 
 [MESH]
 solver = none                   # no moving mesh solve
