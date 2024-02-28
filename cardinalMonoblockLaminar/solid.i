@@ -181,4 +181,5 @@ pipe_density = 8940                   # Copper [kg.m^-3]
 [Outputs]
   exodus = true
   execute_on = 'timestep_end'
+  interval = 10
 []
