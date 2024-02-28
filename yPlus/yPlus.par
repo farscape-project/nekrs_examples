@@ -1,9 +1,8 @@
 [GENERAL]
 polynomialOrder = 3
 
-startFrom = "yPlus0.f00005"
 stopAt = endTime
-endTime = 5.0075
+endTime = 0.0075
 dt = 0.0025
 timeStepper = tombo2
 subCyclingSteps = 0
