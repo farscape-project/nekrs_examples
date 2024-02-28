@@ -1,0 +1,46 @@
+// Boundary conditions
+
+void velocityDirichletConditions(bcData *bc)
+{
+  if (bc->id == 1)
+  {
+    // set parabolic inflow profile
+    bc->u = 0.0;
+    bc->v = 0.0;
+    bc->w = -(2*uInflow)*(1 - (( ((bc->x-cx0)*(bc->x-cx0))+((bc->y-cy0)*(bc->y-cy0)) )/(rPipe*rPipe)));
+  }
+}
+
+void pressureDirichletConditions(bcData *bc)
+{
+  if (bc->id == 2)
+  {
+    // Stabilized outflow (Dong et al)
+    const dfloat iU0delta = 10.0;
+    const dfloat un = bc->u*bc->nx + bc->v*bc->ny + bc->w*bc->nz;
+    const dfloat s0 = 0.5 * (1.0 - tanh(un*iU0delta));
+    bc->p = -0.5 * (bc->u*bc->u + bc->v*bc->v + bc->w*bc->w) * s0;
+  }
+}
+
+void scalarDirichletConditions(bcData * bc)
+{
+  if (bc->id == 1)
+  {
+    bc->s = TInflow;
+  }
+}
+
+void scalarNeumannConditions(bcData * bc)
+{
+  // get flux from Cardinal
+
+  // note: when running with Cardinal, Cardinal will allocate the usrwrk
+  // array. If running with NekRS standalone (e.g. nrsmpi), you need to
+  // replace the usrwrk with some other value or allocate it youself from
+  // the udf and populate it with values.
+  if (bc->id == 3)
+  {
+    bc->flux = 1e7;
+  }
+}
