@@ -1,10 +1,7 @@
 [OCCA]
-# backend = CPU                   # for testing; for N=1 can run on 4 CPUs
 
 [GENERAL]
-polynomialOrder = 3             # for testing; does converge with this for p, U only solve
-                                # not tested this for temperature but expect it to be fine
-                                # may not need to increase for the current mesh
+polynomialOrder = 3
 
 stopAt = endTime
 endTime = 8
@@ -30,17 +27,17 @@ density = 997.0                 # density (water) [kg.m^-3]
 residualTol = 7.5e-09           # absolute velocity tolerance [m/s]
 
 [TEMPERATURE]
-conductivity = 0.6              # water thermal conductivity
+conductivity = 60.0             # thermal conductivity [W.m^-1.K^-1]: unphysically high for water, to ensure Pr<1
 rhoCp = 4173442.0               # rho*Cp where Cp is volumetric specific heat capacity [kg.m^-3 * J.kg^-1.K^-1]
 boundaryTypeMap = t, o, f       # fixed T inlet, zero gradient outlet (equivalent to i, insulated), flux walls
-residualTol = 1.0e-7            # absolute temperature tolerance [degC or K]
+residualTol = 1.0e-7            # absolute temperature tolerance [K]
 
 
 [CASEDATA]
 r_pipe = 0.006                  # pipe radius [m]
 u_inflow = 7.5e-3               # inlet mean velocity [m/s]
 u_init = 7.5e-3                 # initial mean velocity [m/s]
-T_inflow = 350                   # inlet temperature [degC]
-T_init = 350                     # initial temperature [degC]
+T_inflow = 350                  # inlet temperature [K]
+T_init = 350                    # initial temperature [K]
 c_x0 = 0.0                      # x centre [m]
 c_y0 = 0.0                      # y centre [m]
