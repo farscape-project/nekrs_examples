@@ -4,10 +4,10 @@ fluid_initial_temp = 350 # [K]
 
 # Material properties
 armour_thermal_conductivity = 170.0   # Tungsten [W.m^-1.K^-1]
-armour_specific_heat = 134            # Tungsten [J.kg^-1.K^-1]
+# armour_specific_heat = 134            # Tungsten [J.kg^-1.K^-1]
 armour_density = 19300                # Tungsten [kg.m^-3]
 pipe_thermal_conductivity = 400.0     # Copper [W.m^-1.K^-1]
-pipe_specific_heat = 385              # Copper [J.kg^-1.K^-1]
+# pipe_specific_heat = 385              # Copper [J.kg^-1.K^-1]
 pipe_density = 8940                   # Copper [kg.m^-3]
 
 # -----------------------------------------------------
@@ -30,10 +30,10 @@ pipe_density = 8940                   # Copper [kg.m^-3]
     type = HeatConduction
     variable = T
   []
-  [heat_time_derivative]  # heat time derivative
-    type = SpecificHeatConductionTimeDerivative
-    variable = T
-  []
+  # [heat_time_derivative]  # heat time derivative
+  #   type = SpecificHeatConductionTimeDerivative
+  #   variable = T
+  # []
 []
 
 [BCs]
@@ -55,14 +55,14 @@ pipe_density = 8940                   # Copper [kg.m^-3]
   [armour]
     type = HeatConductionMaterial
     thermal_conductivity = '${armour_thermal_conductivity}'
-    specific_heat = '${armour_specific_heat}' # heat time derivative
+    # specific_heat = '${armour_specific_heat}' # heat time derivative
     temp = T
     block = 1
   []
   [pipe]
     type = HeatConductionMaterial
     thermal_conductivity = '${pipe_thermal_conductivity}'
-    specific_heat = '${pipe_specific_heat}' # heat time derivative
+    # specific_heat = '${pipe_specific_heat}' # heat time derivative
     temp = T
     block = 2
   []
@@ -163,9 +163,7 @@ pipe_density = 8940                   # Copper [kg.m^-3]
 
 [Executioner]
   type = Transient
-  # dt = 4e-3 # change timestepping
-  # num_steps = 10 # change timestepping
-  dt = 4e-4 # change timestepping
+  dt = 4e-3
   num_steps = 100 # change timestepping
   nl_abs_tol = 1e-5 # change tolerances?
   nl_rel_tol = 1e-16 # change tolerances?
