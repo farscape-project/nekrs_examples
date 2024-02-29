@@ -1,14 +1,13 @@
 # Initial and boundary condition parameters
-solid_initial_temp = 500 # [degC]
-fluid_initial_temp = 350 # [degC]
-# heat_flux = 1e5   # [W/m^2]
+solid_initial_temp = 500 # [K]
+fluid_initial_temp = 350 # [K]
 
 # Material properties
 armour_thermal_conductivity = 170.0   # Tungsten [W.m^-1.K^-1]
-armour_heat_capacity = 134   # Tungsten [J.kg^-1.K^-1]
+armour_specific_heat = 134            # Tungsten [J.kg^-1.K^-1]
 armour_density = 19300                # Tungsten [kg.m^-3]
 pipe_thermal_conductivity = 400.0     # Copper [W.m^-1.K^-1]
-pipe_heat_capacity = 385     # Copper [J.kg^-1.K^-1]
+pipe_specific_heat = 385              # Copper [J.kg^-1.K^-1]
 pipe_density = 8940                   # Copper [kg.m^-3]
 
 # -----------------------------------------------------
@@ -44,12 +43,6 @@ pipe_density = 8940                   # Copper [kg.m^-3]
     v = nek_temp
     boundary = 2  # MOOSE mesh boundary ID of fluid-solid interface
   []
-  # [heat_flux_in]
-  #   type = NeumannBC
-  #   variable = T
-  #   boundary = 4
-  #   value = ${heat_flux}
-  # []
   [hot_top_surface]
     type = DirichletBC
     variable = T
@@ -62,14 +55,14 @@ pipe_density = 8940                   # Copper [kg.m^-3]
   [armour]
     type = HeatConductionMaterial
     thermal_conductivity = '${armour_thermal_conductivity}'
-    heat_capacity = '${armour_heat_capacity}' # heat time derivative
+    specific_heat = '${armour_specific_heat}' # heat time derivative
     temp = T
     block = 1
   []
   [pipe]
     type = HeatConductionMaterial
     thermal_conductivity = '${pipe_thermal_conductivity}'
-    heat_capacity = '${pipe_heat_capacity}' # heat time derivative
+    specific_heat = '${pipe_specific_heat}' # heat time derivative
     temp = T
     block = 2
   []
@@ -123,6 +116,7 @@ pipe_density = 8940                   # Copper [kg.m^-3]
     from_multi_app = nek
     variable = nek_temp
     fixed_meshes = true
+    search_value_conflicts = false
   []
   [avg_flux] # sends heat flux in avg_flux to nekRS
     type = MultiAppGeneralFieldNearestLocationTransfer
@@ -130,6 +124,7 @@ pipe_density = 8940                   # Copper [kg.m^-3]
     to_multi_app = nek
     variable = avg_flux
     fixed_meshes = true
+    search_value_conflicts = false
   []
   [flux_integral_to_nek] # sends the heat flux integral (for normalization) to nekRS
     type = MultiAppPostprocessorTransfer
