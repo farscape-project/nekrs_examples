@@ -18,10 +18,17 @@ static dfloat C_Y0;
 // run userchk at certain timesteps
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
-	//if ((tstep%1000)==0){
+	// get y+ values every 5 timesteps
+	if ((tstep%5)==0){
     nek::ocopyToNek(time, tstep);
     nek::userchk();
-  //}
+  }
+
+	// get y+ values at simulation time = 0.005
+	if (time==0.005){
+    nek::ocopyToNek(time, tstep);
+    nek::userchk();
+  }
 }
 
 void UDF_LoadKernels(occa::properties& kernelInfo)

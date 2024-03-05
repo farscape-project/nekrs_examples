@@ -2,13 +2,13 @@
 polynomialOrder = 3
 
 stopAt = endTime
-endTime = 0.0075
+endTime = 0.1
 dt = 0.0025
 timeStepper = tombo2
 subCyclingSteps = 0
 
 writeControl = simulationTime
-writeInterval = 1
+writeInterval = 0.05
 
 [MESH]
 solver = none
