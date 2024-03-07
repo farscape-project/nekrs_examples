@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.nekrs_23-0_profile
+
 cores=4
 
 ulimit -s unlimited
