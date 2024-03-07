@@ -1,0 +1,37 @@
+[GENERAL]
+polynomialOrder = 3
+
+stopAt = endTime
+endTime = 30
+dt = 0.0025
+timeStepper = tombo2
+subCyclingSteps = 0
+
+writeControl = simulationTime
+writeInterval = 5
+
+oudf = "../pipe.oudf"
+udf = "../pipe.udf"
+usr = "../pipe.usr"
+
+[MESH]
+solver = none
+file = "../pipe.re2"
+
+connectivityTol = 0.02
+
+[PRESSURE]
+residualTol = 1e-04
+
+[VELOCITY]
+boundaryTypeMap = inlet, outlet, wall
+viscosity = -100  # 1/Re
+density = 1.0
+residualTol = 1e-06
+
+[CASEDATA]
+r_pipe = 0.5      # pipe radius
+u_inflow = 1.0    # inlet mean velocity
+c_x0 = 0.0        # x centre
+c_y0 = 0.0        # y centre
+yp_freq = 2000    # timestep interval between y1+ calculations
