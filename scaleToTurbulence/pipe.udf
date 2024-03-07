@@ -8,7 +8,7 @@ static dfloat U_INFLOW;
 static dfloat P_OUTLET;
 static dfloat C_X0;
 static dfloat C_Y0;
-static dfloat YP_FREQ;
+static int YP_FREQ;
 
 #ifdef __okl__
 
@@ -21,12 +21,6 @@ void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
 	// get y1+ values every YP_FREQ timesteps
 	if ((tstep%YP_FREQ)==0){
-    nek::ocopyToNek(time, tstep);
-    nek::userchk();
-  }
-
-	// get y1+ every 30s of simulation time
-	if (time%30==0){
     nek::ocopyToNek(time, tstep);
     nek::userchk();
   }
