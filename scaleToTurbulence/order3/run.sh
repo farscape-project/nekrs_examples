@@ -8,5 +8,5 @@ ulimit -s unlimited
 
 which nrsmpi | tee log.nrsversion
 
-nrsmpi pipe $cores 2>&1 | tee log.pipe_order$cores
+nrsmpi pipe $cores 2>&1 | tee log.pipe
 nrsvis pipe
