@@ -16,3 +16,7 @@ log.*
 *.png
 *.jpg
 *.jpeg
+
+# slurm outputs
+slurm-*.out
+machine.file.*
