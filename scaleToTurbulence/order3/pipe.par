@@ -30,8 +30,9 @@ density = 1.0
 residualTol = 1e-06
 
 [CASEDATA]
-r_pipe = 0.5      # pipe radius
-u_inflow = 1.0    # inlet mean velocity
-c_x0 = 0.0        # x centre
-c_y0 = 0.0        # y centre
-yp_freq = 2000    # timestep interval between y1+ calculations
+r_pipe = 0.5        # pipe radius
+u_inflow = 1.0      # inlet mean velocity
+c_x0 = 0.0          # x centre
+c_y0 = 0.0          # y centre
+yp_interval = 2000  # timestep interval between y1+ calculations
+yp_time = 5.0       # time gap between y1+ calculations
