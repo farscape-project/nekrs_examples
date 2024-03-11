@@ -3,6 +3,9 @@
 *.nek5000
 *.log
 log.*
+*.tar
+*.tgz
+*.tar.gz
 
 # mesh formats
 *.re2
