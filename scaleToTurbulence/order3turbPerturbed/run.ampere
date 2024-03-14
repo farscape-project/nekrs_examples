@@ -2,7 +2,7 @@
 
 #! sbatch directives begin here ###############################
 #! Name of the job:
-#SBATCH -J nekRS-pipe-o3turb
+#SBATCH -J nekRS-pipe-o3turbPerturbed
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
 #SBATCH -A UKAEA-AP001-GPU
 #! How many whole nodes should be allocated?
