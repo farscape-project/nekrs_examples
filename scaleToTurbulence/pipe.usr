@@ -10,7 +10,9 @@ c-----------------------------------------------------------------------
       real wd
       common /walldist/ wd(lx1,ly1,lz1,lelv)
 
-      write(*,*) '                 minimum      maximum      average'
+      if(nio.eq.0)then
+        write(*,*) '                 minimum      maximum      average'
+      endif
       call y_p_limits(wd,.true.)
 
       return
