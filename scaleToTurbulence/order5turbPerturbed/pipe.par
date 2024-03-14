@@ -14,7 +14,7 @@ writeInterval = 5
 regularization = hpfrt + nModes=1 + scalingCoeff=10
 
 oudf = "../pipe.oudf"
-udf = "pipe.udf"
+udf = "../pipePerturbed.udf"
 usr = "../pipe.usr"
 
 [MESH]
