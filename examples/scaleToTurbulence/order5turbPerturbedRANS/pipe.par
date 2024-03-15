@@ -31,9 +31,9 @@ residualTol = 1e-06
 
 [TEMPERATURE]
 # NOTE: required for RANS as temperature is always SCALAR00
-solver = none   # don't solve for temperature
+solver = none   # switch temperature solve off
 rhoCp = 1.0
-conductivity = -146205  # does this value matter for fixed T?
+conductivity = -3.8e4 # -Re; likely doesn't matter since solve isn't used
 boundaryTypeMap = inlet, outlet, insulated
 residualTol = 1e-06
 
