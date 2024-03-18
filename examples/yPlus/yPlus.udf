@@ -7,6 +7,7 @@ static dfloat R_PIPE;
 static dfloat U_INFLOW;
 static dfloat C_X0;
 static dfloat C_Y0;
+static dfloat YP_TIME;
 
 #ifdef __okl__
 
@@ -17,16 +18,32 @@ static dfloat C_Y0;
 // run userchk at certain timesteps
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
-	// get y+ values every 5 timesteps
+	// 1) print y+ values every 5 timesteps
 	if ((tstep%5)==0){
     nek::ocopyToNek(time, tstep);
     nek::userchk();
   }
 
-	// get y+ values at simulation time = 0.005
+	// 2) print y+ values at simulation time = 0.005
 	if (time==0.005){
     nek::ocopyToNek(time, tstep);
     nek::userchk();
+  }
+
+	// 3) print y1+ values whenever time is a multiple of YP_TIME
+
+  static float lastPrintTime = -1.0f; // Initialize to an impossible time for the first call
+  float currentTarget = std::floor(time / YP_TIME) * YP_TIME; // Find the closest multiple of YP_TIME below or equal to the current time
+  if (lastPrintTime < currentTarget) { // Check if we have crossed a multiple of YP_TIME since last print
+    nek::userchk();
+    nek::ocopyToNek(time, tstep);
+    lastPrintTime = currentTarget; // Update last print time to the current target
+  }
+
+	// 4) print y1+ values at output steps
+  if (nrs->isOutputStep) {
+    nek::ocopyToNek(time, tstep);
+    nek::userchk(); 
   }
 }
 
@@ -44,6 +61,7 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
 	platform->par->extract("casedata","u_inflow",U_INFLOW);
 	platform->par->extract("casedata","c_x0",C_X0);
 	platform->par->extract("casedata","c_y0",C_Y0);
+  platform->par->extract("casedata","yp_time",YP_TIME);
 }
 
 void UDF_Setup(nrs_t* nrs)
