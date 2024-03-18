@@ -253,10 +253,10 @@ void UDF_Setup(nrs_t* nrs)
 
   int bID = 1; // inlet's boundary id
   
-  // offsets for point to copy flow profile from
+  // vector shift from inlet to recycling point
   const dfloat dx = 0.0;
   const dfloat dy = 0.0;
-  const dfloat dz = 5.0;
+  const dfloat dz = -5.0;
   
   const dfloat ubar = U_INFLOW; // mean velocity
   
