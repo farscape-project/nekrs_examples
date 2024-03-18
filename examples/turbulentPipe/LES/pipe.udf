@@ -4,7 +4,10 @@
 
 #include "udf.hpp"
 
-// start recycling requirements
+// -----------------------------------------------------------
+// Recycling inlet declarations
+// -----------------------------------------------------------
+
 static pointInterpolation_t *interpolator = nullptr;
 static occa::memory o_BdryToV;
 static occa::memory o_Upart;
@@ -22,7 +25,10 @@ static dfloat *tmp1, *tmp2;
 static occa::memory o_tmp1, o_tmp2;
 
 static int Nblock;
-// end recycling requirements
+
+// -----------------------------------------------------------
+// General user declarations
+// -----------------------------------------------------------
 
 static dfloat R_PIPE;
 static dfloat U_INFLOW;
@@ -31,14 +37,20 @@ static dfloat P_OUTLET;
 static dfloat C_X0;
 static dfloat C_Y0;
 static dfloat C_Z0;
-static dfloat zAmp;
-static dfloat transvAmp;
+
+// -----------------------------------------------------------
+// Include .oudf
+// -----------------------------------------------------------
 
 #ifdef __okl__
 
-#include "pipeRecycle.oudf"
+#include "../pipe.oudf"
 
 #endif
+
+// -----------------------------------------------------------
+// Recycling inlet functions
+// -----------------------------------------------------------
 
 void setupRecycledInflow(nrs_t *nrs, int bID, dfloat dx, dfloat dy, dfloat dz, dfloat ubar)
 {
@@ -150,15 +162,23 @@ void updateRecycledVelocity(nrs_t *nrs)
   
 }
 
+// -----------------------------------------------------------
+// General user functions
+// -----------------------------------------------------------
+
 dfloat parabolic_vel(dfloat u, dfloat r, dfloat rPipe)
 {
   // calculate parabolic velocity profile
   return -(2*u)*(1 - ((r*r)/(rPipe*rPipe)));
 }
 
+// -----------------------------------------------------------
+// Core NekRS functions
+// -----------------------------------------------------------
+
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
-  // update recycling inlet velocity
+  // Recycling inlet
   updateRecycledVelocity(nrs);
 
   // print y1+ values at output steps
@@ -170,7 +190,9 @@ void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 
 void UDF_LoadKernels(occa::properties& kernelInfo)
 {
-  // load NekRS kernel plugins used for recycling inlet
+  // -----------------------------------------------------------
+  // Recycling inlet: load required NekRS kernel plugins
+  // -----------------------------------------------------------
   const std::string path = getenv("NEKRS_KERNEL_DIR") + std::string("/plugins/");
   
   std::string fileName, kernelName;
@@ -194,17 +216,34 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
   platform->par->extract("casedata","c_x0",C_X0);
   platform->par->extract("casedata","c_y0",C_Y0);
   platform->par->extract("casedata","c_z0",C_Z0);
-  platform->par->extract("casedata","zAmp",zAmp);
-  platform->par->extract("casedata","transvAmp",transvAmp);
 }
 
 void UDF_Setup(nrs_t* nrs)
 {
   // Called once after initialising the mesh, boundary fields etc.
-  // set initial conditions for the velocity, temperature, and pressure
-
+  
   mesh_t * mesh = nrs->meshV;
 
+  // -----------------------------------------------------------
+  // Recycling inlet setup
+  // -----------------------------------------------------------
+  nrs->o_usrwrk = platform->device.malloc(nrs->NVfields * nrs->fieldOffset, sizeof(dfloat));
+
+  int bID = 1; // inlet's boundary id
+  
+  // vector shift from inlet to recycling point
+  const dfloat dx = 0.0;
+  const dfloat dy = 0.0;
+  const dfloat dz = -5.0;
+  
+  const dfloat ubar = U_INFLOW; // mean velocity
+  
+  setupRecycledInflow(nrs, bID, dx, dy, dz, ubar);
+
+  // -----------------------------------------------------------
+  // Initial conditions (ICs)
+  // -----------------------------------------------------------
+  
   // loop over all the GLL points and assign directly to the solution arrays by
   // indexing according to the field offset necessary to hold the data for each
   // solution component
@@ -232,12 +271,12 @@ void UDF_Setup(nrs_t* nrs)
     // axial perturbation
     dfloat zAxialMod = sin(kL30*(z + 15));
     dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
-    dfloat u_z_p = zAmp * zAxialMod * zRadialPerturb;
+    dfloat u_z_p = 0.1 * zAxialMod * zRadialPerturb;
 
     // transverse perturbation
     dfloat xTransvMod = sin(kd2*(r + R_PIPE));
     dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
-    dfloat u_x_p = transvAmp * xTransvMod * xPerturb;
+    dfloat u_x_p = 0.1 * xTransvMod * xPerturb;
     dfloat u_y_p = u_x_p;
 
     nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
@@ -246,19 +285,4 @@ void UDF_Setup(nrs_t* nrs)
 
     nrs->P[n] = 0.0;
   }
-
-  // set up recycling inlet
-
-  nrs->o_usrwrk = platform->device.malloc(nrs->NVfields * nrs->fieldOffset, sizeof(dfloat));
-
-  int bID = 1; // inlet's boundary id
-  
-  // vector shift from inlet to recycling point
-  const dfloat dx = 0.0;
-  const dfloat dy = 0.0;
-  const dfloat dz = -5.0;
-  
-  const dfloat ubar = U_INFLOW; // mean velocity
-  
-  setupRecycledInflow(nrs, bID, dx, dy, dz, ubar);
 }

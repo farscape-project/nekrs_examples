@@ -1,0 +1,11 @@
+# turbulentPipe
+
+This group of cases demonstrates turbulent simulations in NekRS. In some cases an LES (Large-Eddy Simulation) model known in NekRS as `hpfrt` is used, and in some the k-$\tau$ RANS (Reynolds-Averaged Navier-Stokes) model is used.
+
+This example also demonstrates a workflow for using a single mesh to run a nondimensional simulation at various different resolutions, using the same mesh and applying increasing p-refinement (set by `polynomialOrder`) to change the resolution as well as using the result of a coarser mesh as the initial condition of the simulation. The flow properties can be changed with each run, in this case increasing the Reynolds number (through the viscosity) alongside the increasing polynomial order. If the `polynomialOrder` changes between the restart file and the current run, the solutions from the restart file are interpolated onto the new quadrature points.
+
+These cases use a recycling inlet boundary condition. These parts of the input files (in `.udf` and `.oudf`) are clearly marked with comments. This boundary condition is helpful in avoiding the need to simulate the full entrance length that would be required for a simulation using a laminar (parabolic) inlet profile, instead copying the velocity from a region downstream of the inlet and interpolating this onto the inlet as a boundary condition, rescaling it if required to ensure the inlet condition always provides the desired mean flow rate. Note that the recycling inlet uses the `NEKRS_KERNEL_DIR` environment variable to access plugin kernels provided with NekRS, which the user must set. This should point to the `nekRS/kernels` directory.
+
+## Note: paths between files
+
+These cases are designed to be run from each of the directories containing a `.par` file, each of which points to `.udf`, `.oudf` and `.usr` files in other directories. For example, the reader may notice that while `pipe.oudf` is in the same directory as `pipe.udf`, the `.udf` file includes `../pipe.oudf`, and the same is seen with the `.usr` file including `../../yPlus_limits.f`. This is because when the simulation is run from the directories containing the `.par` files, these files are in levels below the working directory.

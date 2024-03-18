@@ -1,0 +1,58 @@
+[GENERAL]
+polynomialOrder = 3
+
+stopAt = endTime
+endTime = 150
+dt = targetCFL=0.5 + max=0.0075 + initial=0.0025  # adaptive timestep
+timeStepper = tombo2
+subCyclingSteps = 0
+
+writeControl = simulationTime
+writeInterval = 5
+
+oudf = "../pipeRANS.oudf"
+udf = "../pipeRANS.udf"
+usr = "../../pipe.usr"
+
+[MESH]
+solver = none
+file = "../../pipe.re2"
+
+connectivityTol = 0.02
+
+[PRESSURE]
+residualTol = 1e-04
+
+[VELOCITY]
+boundaryTypeMap = inlet, outlet, wall
+viscosity = -1.4e4  # -Re (interpreted as 1/Re)
+density = 1.0
+residualTol = 1e-06
+
+[TEMPERATURE]
+# NOTE: required for RANS as temperature is always SCALAR00
+solver = none   # switch temperature solve off
+rhoCp = 1.0
+conductivity = -1.4e4 # -Re; likely doesn't matter since solve isn't used
+boundaryTypeMap = inlet, outlet, insulated
+residualTol = 1e-06
+
+[SCALAR01] # k
+boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
+residualTol = 1e-08
+rho = 1.0
+diffusivity = -1.4e4  # -Re (interpreted as 1/Re)
+
+[SCALAR02] # tau
+boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
+residualTol = 1e-06
+rho = 1.0
+diffusivity = -1.4e4  # -Re (interpreted as 1/Re)
+
+[CASEDATA]
+r_pipe = 0.5        # pipe radius
+u_inflow = 1.0      # inlet mean velocity
+u_init = 1.0        # initial condition parabola mean velocity
+c_x0 = 0.0          # x centre
+c_y0 = 0.0          # y centre
+c_z0 = 0.0          # z centre
