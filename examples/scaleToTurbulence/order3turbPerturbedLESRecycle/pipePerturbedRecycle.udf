@@ -1,0 +1,264 @@
+//
+// nekRS User Defined File
+//
+
+#include "udf.hpp"
+
+// start recycling requirements
+static pointInterpolation_t *interpolator = nullptr;
+static occa::memory o_BdryToV;
+static occa::memory o_Upart;
+
+static occa::kernel getBCFluxKernel;
+static occa::kernel sumReductionKernel;
+
+static int bidInlet;
+static dfloat targetUbar;
+
+static dfloat *flux, *area;
+static occa::memory o_flux, o_area;
+
+static dfloat *tmp1, *tmp2;
+static occa::memory o_tmp1, o_tmp2;
+
+static int Nblock;
+// end recycling requirements
+
+static dfloat R_PIPE;
+static dfloat U_INFLOW;
+static dfloat U_INIT;
+static dfloat P_OUTLET;
+static dfloat C_X0;
+static dfloat C_Y0;
+static dfloat C_Z0;
+static dfloat zAmp;
+static dfloat transvAmp;
+
+#ifdef __okl__
+
+#include "pipeRecycle.oudf"
+
+#endif
+
+void setupRecycledInflow(nrs_t *nrs, int bID, dfloat dx, dfloat dy, dfloat dz, dfloat ubar)
+{
+  mesh_t *mesh = nrs->meshV; 
+
+  bidInlet = bID;
+  targetUbar = ubar;
+
+  // count faces
+  dlong nface = 0;
+  for (dlong e = 0; e<mesh->Nelements; e++)
+    for (int f = 0; f < mesh->Nfaces; f++)
+      if (mesh->EToB[f + mesh->Nfaces * e] == bidInlet) nface++;
+
+  const dlong npts = nface * mesh->Nfp;
+
+  dlong nfaceg = nface;
+  MPI_Allreduce(MPI_IN_PLACE, &nfaceg, 1, MPI_DLONG, MPI_SUM, platform->comm.mpiComm);
+  if (platform->comm.mpiRank==0) 
+    printf("setupRecycledInflow, bid = %d, nface = %d, npts = %d\n", bidInlet, nfaceg, nfaceg*mesh->Nfp);
+
+  // allocate
+  occa::memory o_xpart = platform->device.malloc(npts, sizeof(dfloat));
+  occa::memory o_ypart = platform->device.malloc(npts, sizeof(dfloat));
+  occa::memory o_zpart = platform->device.malloc(npts, sizeof(dfloat));
+  o_BdryToV = platform->device.malloc(npts, sizeof(dlong));
+  o_Upart = platform->device.malloc(nrs->NVfields * npts, sizeof(dfloat));
+
+  const dlong NfpTotal = mesh->Nelements * mesh->Nfaces * mesh->Nfp;
+
+  Nblock = (NfpTotal + BLOCKSIZE - 1) / BLOCKSIZE;
+  tmp1 = (dfloat *)calloc(Nblock, sizeof(dfloat));
+  tmp2 = (dfloat *)calloc(Nblock, sizeof(dfloat));
+  o_tmp1 = platform->device.malloc(Nblock * sizeof(dfloat), tmp1);
+  o_tmp2 = platform->device.malloc(Nblock * sizeof(dfloat), tmp2);
+                         
+  flux = (dfloat *)calloc(NfpTotal, sizeof(dfloat));
+  area = (dfloat *)calloc(NfpTotal, sizeof(dfloat));
+  o_flux = platform->device.malloc(NfpTotal * sizeof(dfloat), flux);
+  o_area = platform->device.malloc(NfpTotal * sizeof(dfloat), area);
+
+  // set up id mapping
+  {
+    std::vector<dlong> BdryToV;
+    BdryToV.reserve(npts);
+    dlong ia = 0;
+    for (dlong e = 0; e<mesh->Nelements; e++) {
+      for (int f = 0; f < mesh->Nfaces; f++) {  
+        if (mesh->EToB[f + mesh->Nfaces * e] == bidInlet) {
+          dlong offset = e * mesh->Nfaces * mesh->Nfp + f * mesh->Nfp;
+          for (int v = 0; v < mesh->Nfp; v++) {
+            BdryToV[ia] = mesh->vmapM[offset + v];
+            ia++;
+          }
+        }
+      }
+    }
+    o_BdryToV.copyFrom(BdryToV.data(), npts * sizeof(dlong));
+  }
+
+  // extract inlet locations
+  copyBoundaryPoints(npts, o_BdryToV, mesh->o_x, mesh->o_y, mesh->o_z,
+                     o_xpart, o_ypart, o_zpart); 
+
+  // recycled location
+  platform->linAlg->add(npts, dx, o_xpart);
+  platform->linAlg->add(npts, dy, o_ypart);
+  platform->linAlg->add(npts, dz, o_zpart);
+
+  interpolator = new pointInterpolation_t(nrs);
+  interpolator->setPoints(npts, o_xpart, o_ypart, o_zpart);
+  interpolator->find();
+}
+
+void updateRecycledVelocity(nrs_t *nrs)
+{
+  mesh_t *mesh = nrs->meshV;
+
+  dlong npts = interpolator->numPoints();
+  interpolator->eval(nrs->NVfields, nrs->fieldOffset, nrs->o_U, npts, o_Upart);
+  pasteInletVelocity(npts, nrs->fieldOffset, o_BdryToV, o_Upart, nrs->o_usrwrk);
+
+  // rescale
+  const dlong NfpTotal = mesh->Nelements * mesh->Nfaces * mesh->Nfp;
+
+  getBCFluxKernel(mesh->Nelements,
+                  bidInlet,
+                  nrs->fieldOffset,
+                  nrs->o_usrwrk,
+                  mesh->o_vmapM,
+                  mesh->o_EToB,
+                  mesh->o_sgeo,
+                  o_area,
+                  o_flux);
+
+  sumReductionKernel(NfpTotal, o_area, o_flux, o_tmp1, o_tmp2);
+
+  o_tmp1.copyTo(tmp1);
+  o_tmp2.copyTo(tmp2);
+  dfloat sbuf[2] = {0, 0};
+  for (int n = 0; n < Nblock; n++) {
+    sbuf[0] += tmp1[n];
+    sbuf[1] += tmp2[n];
+  }
+  MPI_Allreduce(MPI_IN_PLACE, sbuf, 2, MPI_DFLOAT, MPI_SUM, platform->comm.mpiComm);
+
+  const dfloat scale = -targetUbar * sbuf[0] / sbuf[1];
+  scaleInletVelocity(npts, nrs->fieldOffset, scale, o_BdryToV, nrs->o_usrwrk);
+  
+}
+
+dfloat parabolic_vel(dfloat u, dfloat r, dfloat rPipe)
+{
+  // calculate parabolic velocity profile
+  return -(2*u)*(1 - ((r*r)/(rPipe*rPipe)));
+}
+
+void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+{
+  // update recycling inlet velocity
+  updateRecycledVelocity(nrs);
+
+  // print y1+ values at output steps
+  if (nrs->isOutputStep) {
+    nek::ocopyToNek(time, tstep);
+    nek::userchk(); 
+  }
+}
+
+void UDF_LoadKernels(occa::properties& kernelInfo)
+{
+  // load NekRS kernel plugins used for recycling inlet
+  const std::string path = getenv("NEKRS_KERNEL_DIR") + std::string("/plugins/");
+  
+  std::string fileName, kernelName;
+  const std::string extension = ".okl";
+  { 
+    kernelName = "getBCFlux";
+    fileName = path + kernelName + extension;
+    getBCFluxKernel = platform->device.buildKernel(fileName, kernelInfo, true);
+    
+    kernelName = "sumReduction"; 
+    fileName = path + kernelName + extension;
+    sumReductionKernel = platform->device.buildKernel(fileName, kernelInfo, true);
+  }
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+  platform->par->extract("casedata","r_pipe",R_PIPE);
+  platform->par->extract("casedata","u_inflow",U_INFLOW);
+  platform->par->extract("casedata","u_init",U_INIT);
+  platform->par->extract("casedata","c_x0",C_X0);
+  platform->par->extract("casedata","c_y0",C_Y0);
+  platform->par->extract("casedata","c_z0",C_Z0);
+  platform->par->extract("casedata","zAmp",zAmp);
+  platform->par->extract("casedata","transvAmp",transvAmp);
+}
+
+void UDF_Setup(nrs_t* nrs)
+{
+  // Called once after initialising the mesh, boundary fields etc.
+  // set initial conditions for the velocity, temperature, and pressure
+
+  mesh_t * mesh = nrs->meshV;
+
+  // loop over all the GLL points and assign directly to the solution arrays by
+  // indexing according to the field offset necessary to hold the data for each
+  // solution component
+  int n_gll_points = mesh->Np * mesh->Nelements;
+
+  for (int n = 0; n < n_gll_points; ++n)
+  {
+    // set wavenumbers
+    static dfloat kx = 5*M_PI/R_PIPE;
+    static dfloat ky = kx;
+    static dfloat kz = kx;
+    static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
+    static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
+    static dfloat kL30 = 30*(M_PI/30);
+    
+    // get gll point coordinates    
+    dfloat x = mesh->x[n] - C_X0;
+    dfloat y = mesh->y[n] - C_Y0;
+    dfloat z = mesh->z[n] - C_Z0;
+    dfloat r = sqrt(x*x + y*y);
+    
+    // parabolic axial profile
+    dfloat u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
+
+    // axial perturbation
+    dfloat zAxialMod = sin(kL30*(z + 15));
+    dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
+    dfloat u_z_p = zAmp * zAxialMod * zRadialPerturb;
+
+    // transverse perturbation
+    dfloat xTransvMod = sin(kd2*(r + R_PIPE));
+    dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
+    dfloat u_x_p = transvAmp * xTransvMod * xPerturb;
+    dfloat u_y_p = u_x_p;
+
+    nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
+    nrs->U[n + 1 * nrs->fieldOffset] = u_y_p;
+    nrs->U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
+
+    nrs->P[n] = 0.0;
+  }
+
+  // set up recycling inlet
+
+  nrs->o_usrwrk = platform->device.malloc(nrs->NVfields * nrs->fieldOffset, sizeof(dfloat));
+
+  int bID = 1; // inlet's boundary id
+  
+  // offsets for point to copy flow profile from
+  const dfloat dx = 0.0;
+  const dfloat dy = 0.0;
+  const dfloat dz = 5.0;
+  
+  const dfloat ubar = U_INFLOW; // mean velocity
+  
+  setupRecycledInflow(nrs, bID, dx, dy, dz, ubar);
+}

@@ -15,8 +15,8 @@ writeInterval = 5
 
 regularization = hpfrt + nModes=1 + scalingCoeff=10
 
-oudf = "../pipe.oudf"
-udf = "../pipePerturbed.udf"
+oudf = "pipeRecycle.oudf"
+udf = "pipePerturbedRecycle.udf"
 usr = "../pipe.usr"
 
 [MESH]
@@ -43,5 +43,3 @@ c_y0 = 0.0          # y centre
 c_z0 = 0.0          # z centre
 zAmp = 0.1          # axial perturbation amplitude
 transvAmp = 0.1     # transverse perturbation amplitude
-yp_interval = 2000  # timestep interval between y1+ calculations
-yp_time = 5.0       # time gap between y1+ calculations
