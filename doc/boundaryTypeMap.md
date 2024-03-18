@@ -30,8 +30,8 @@ Various keys can be passed to the `boundaryTypeMap` variable in `.par`, some of 
 | --- | --- | --- | --- |
 | `periodic` | `p` |  | `0` |
 | `interpolation` | `int` |  | `bcMap::bcTypeINTS` |
-| `codedfixedvalue` | `inlet`, `t` |  | `bcMap::bcTypeS` |
+| `codedfixedvalue` | `inlet`, `t` | `scalarDirichletConditions` | `bcMap::bcTypeS` |
 | `zerogradient` | `zeroflux`, `insulated`, `outflow`, `outlet`, `i`, `o` |  | `bcMap::bcTypeF0` |
-| `codedfixedgradient` | `flux`, `codedFixedgradient`, `f` |  | `bcMap::bcTypeF` |
+| `codedfixedgradient` | `flux`, `codedFixedgradient`, `f` | `scalarNeumannConditions` | `bcMap::bcTypeF` |
 | `none` |  |  | `bcMap::bcTypeNone` |
 
