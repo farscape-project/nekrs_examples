@@ -31,7 +31,6 @@ rhoCp = 4173442.0               # rho*Cp where Cp is volumetric specific heat ca
 boundaryTypeMap = t, o, f       # fixed T inlet, zero gradient outlet (equivalent to i, insulated), flux walls
 residualTol = 1.0e-7            # absolute temperature tolerance [K]
 
-
 [CASEDATA]
 r_pipe = 0.006                  # pipe radius [m]
 u_inflow = 7.5e-3               # inlet mean velocity [m/s]

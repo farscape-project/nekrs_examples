@@ -164,7 +164,7 @@ pipe_density = 8940                   # Copper [kg.m^-3]
 [Executioner]
   type = Transient
   dt = 4e-3
-  num_steps = 100 # change timestepping
+  end_time = 0.4
   nl_abs_tol = 1e-5 # change tolerances?
   nl_rel_tol = 1e-16 # change tolerances?
   petsc_options_value = 'hypre boomeramg'
