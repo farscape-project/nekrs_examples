@@ -21,7 +21,7 @@ static dfloat rho, mueLam;
 
 #ifdef __okl__
 
-#include "../pipe.oudf"
+#include "../RANS/pipeRANS.oudf"
 
 #endif
 
