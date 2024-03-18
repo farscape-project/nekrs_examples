@@ -1,0 +1,167 @@
+//
+// nekRS User Defined File
+//
+#include "udf.hpp"
+#include "plugins/RANSktau.hpp"
+
+static dfloat R_PIPE;
+static dfloat U_INFLOW;
+static dfloat U_INIT;
+static dfloat P_OUTLET;
+static dfloat C_X0;
+static dfloat C_Y0;
+static dfloat C_Z0;
+static dfloat zAmp;
+static dfloat transvAmp;
+static dfloat YP_TIME;
+static int YP_INTERVAL;
+
+// RANS k-tau
+static dfloat rho, mueLam;
+
+#ifdef __okl__
+
+#include "../RANS/pipeRANS.oudf"
+
+#endif
+
+dfloat parabolic_vel(dfloat u, dfloat r, dfloat rPipe)
+{
+  // calculate parabolic velocity profile
+  return -(2*u)*(1 - ((r*r)/(rPipe*rPipe)));
+}
+
+// RANS k-tau user source terms
+void userq(nrs_t *nrs, dfloat time, occa::memory o_S, occa::memory o_FS)
+{
+  mesh_t *mesh = nrs->meshV;
+  cds_t *cds = nrs->cds;
+
+  RANSktau::updateSourceTerms();
+}
+
+// RANS k-tau user variable properties 
+void uservp(nrs_t *nrs,
+            dfloat time,
+            occa::memory o_U,
+            occa::memory o_S,
+            occa::memory o_UProp,
+            occa::memory o_SProp)
+{
+  mesh_t *mesh = nrs->meshV;
+  cds_t *cds = nrs->cds;
+
+  RANSktau::updateProperties();
+
+  dfloat conductivity;
+  platform->options.getArgs("SCALAR00 DIFFUSIVITY", conductivity);
+  const dfloat Pr_t = 0.7;
+  occa::memory o_mue_t = RANSktau::o_mue_t();
+  occa::memory o_temp_mue = cds->o_diff + 0 * cds->fieldOffset[0] * sizeof(dfloat);
+  scalarScaledAdd(mesh->Nlocal, conductivity, 1 / Pr_t, o_mue_t, o_temp_mue);
+}
+
+// run userchk at certain timesteps
+void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+{
+  // get y1+ values every YP_INTERVAL timesteps
+
+  if ((tstep%YP_INTERVAL)==0){
+    nek::ocopyToNek(time, tstep);
+    nek::userchk();
+  }
+
+  // get y1+ values every YP_TIME timesteps
+
+  static float lastPrintTime = -1.0f; // Initialize to an impossible time for the first call
+  float currentTarget = std::floor(time / YP_TIME) * YP_TIME; // Find the closest multiple of YP_TIME below or equal to the current time
+
+  if (lastPrintTime < currentTarget) { // Check if we have crossed a multiple of YP_TIME since last print
+    nek::userchk();
+    nek::ocopyToNek(time, tstep);
+    lastPrintTime = currentTarget; // Update last print time to the current target
+  }
+}
+
+void UDF_LoadKernels(occa::properties& kernelInfo)
+{
+  kernelInfo["defines/rPipe"]		= R_PIPE;
+  kernelInfo["defines/uInflow"]	= U_INFLOW;
+  kernelInfo["defines/cx0"]			= C_X0;
+  kernelInfo["defines/cy0"]			= C_Y0;
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+  platform->par->extract("casedata","r_pipe",R_PIPE);
+  platform->par->extract("casedata","u_inflow",U_INFLOW);
+  platform->par->extract("casedata","u_init",U_INIT);
+  platform->par->extract("casedata","c_x0",C_X0);
+  platform->par->extract("casedata","c_y0",C_Y0);
+  platform->par->extract("casedata","c_z0",C_Z0);
+  platform->par->extract("casedata","zAmp",zAmp);
+  platform->par->extract("casedata","transvAmp",transvAmp);
+  platform->par->extract("casedata","yp_interval",YP_INTERVAL);
+  platform->par->extract("casedata","yp_time",YP_TIME);
+}
+
+void UDF_Setup(nrs_t* nrs)
+{
+  // Called once after initialising the mesh, boundary fields etc.
+
+  mesh_t * mesh = nrs->meshV;
+
+  // RANS k-tau setup
+  udf.properties = &uservp;
+  udf.sEqnSource = &userq;
+
+  const int scalarFieldStart = 1;
+  platform->options.getArgs("VISCOSITY", mueLam);
+  platform->options.getArgs("DENSITY", rho);
+
+  RANSktau::setup(nrs, mueLam, rho, scalarFieldStart);
+  
+  // set initial conditions for the velocity, temperature, and pressure
+
+  // loop over all the GLL points and assign directly to the solution arrays by
+  // indexing according to the field offset necessary to hold the data for each
+  // solution component
+  int n_gll_points = mesh->Np * mesh->Nelements;
+
+  for (int n = 0; n < n_gll_points; ++n)
+  {
+    // set wavenumbers
+    static dfloat kx = 5*M_PI/R_PIPE;
+    static dfloat ky = kx;
+    static dfloat kz = kx;
+    static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
+    static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
+    static dfloat kL30 = 30*(M_PI/30);
+    
+    // get gll point coordinates    
+    dfloat x = mesh->x[n] - C_X0;
+    dfloat y = mesh->y[n] - C_Y0;
+    dfloat z = mesh->z[n] - C_Z0;
+    dfloat r = sqrt(x*x + y*y);
+    
+    // parabolic axial profile
+    dfloat u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
+
+    // axial perturbation
+    dfloat zAxialMod = sin(kL30*(z + 15));
+    dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
+    dfloat u_z_p = zAmp * zAxialMod * zRadialPerturb;
+
+    // transverse perturbation
+    dfloat xTransvMod = sin(kd2*(r + R_PIPE));
+    dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
+    dfloat u_x_p = transvAmp * xTransvMod * xPerturb;
+    dfloat u_y_p = u_x_p;
+
+    nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
+    nrs->U[n + 1 * nrs->fieldOffset] = u_y_p;
+    nrs->U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
+
+    nrs->P[n] = 0.0;
+  }
+}
