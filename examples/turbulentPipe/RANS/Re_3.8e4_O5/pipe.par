@@ -9,7 +9,7 @@ timeStepper = tombo2
 subCyclingSteps = 0
 
 writeControl = simulationTime
-writeInterval = 5
+writeInterval = 10
 
 oudf = "../pipeRANS.oudf"
 udf = "../pipeRANS.udf"
