@@ -1,22 +1,23 @@
 [GENERAL]
-polynomialOrder = 5
+polynomialOrder = 7
 
+startFrom = "../Re_1.4e4_O3/pipe0.f00030"
 stopAt = endTime
-endTime = 150
-dt = targetCFL=0.5 + max=0.003 + initial=0.001  # adaptive timestep
+endTime = 300
+dt = targetCFL=0.5 + max=0.0015 + initial=0.0005  # adaptive timestep
 timeStepper = tombo2
 subCyclingSteps = 0
 
 writeControl = simulationTime
 writeInterval = 5
 
-oudf = "../RANS/pipeRANS.oudf"
-udf = "../RANS/pipePerturbedRANS.udf"
-usr = "../pipe.usr"
+oudf = "../pipeRANS.oudf"
+udf = "../pipeRANS.udf"
+usr = "../../pipe.usr"
 
 [MESH]
 solver = none
-file = "../pipe.re2"
+file = "../../pipe.re2"
 
 connectivityTol = 0.02
 
@@ -25,7 +26,7 @@ residualTol = 1e-04
 
 [VELOCITY]
 boundaryTypeMap = inlet, outlet, wall
-viscosity = -3.8e4  # -Re (interpreted as 1/Re)
+viscosity = -6.9e4  # -Re (interpreted as 1/Re)
 density = 1.0
 residualTol = 1e-06
 
@@ -33,7 +34,7 @@ residualTol = 1e-06
 # NOTE: required for RANS as temperature is always SCALAR00
 solver = none   # switch temperature solve off
 rhoCp = 1.0
-conductivity = -3.8e4 # -Re; likely doesn't matter since solve isn't used
+conductivity = -6.9e4 # -Re; likely doesn't matter since solve isn't used
 boundaryTypeMap = inlet, outlet, insulated
 residualTol = 1e-06
 
@@ -41,13 +42,13 @@ residualTol = 1e-06
 boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
 residualTol = 1e-08
 rho = 1.0
-diffusivity = -3.8e4  # -Re (interpreted as 1/Re)
+diffusivity = -6.9e4  # -Re (interpreted as 1/Re)
 
 [SCALAR02] # tau
 boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
 residualTol = 1e-06
 rho = 1.0
-diffusivity = -3.8e4  # -Re (interpreted as 1/Re)
+diffusivity = -6.9e4  # -Re (interpreted as 1/Re)
 
 [CASEDATA]
 r_pipe = 0.5        # pipe radius
@@ -56,7 +57,4 @@ u_init = 1.0        # initial condition parabola mean velocity
 c_x0 = 0.0          # x centre
 c_y0 = 0.0          # y centre
 c_z0 = 0.0          # z centre
-zAmp = 0.1          # axial perturbation amplitude
-transvAmp = 0.1     # transverse perturbation amplitude
-yp_interval = 2000  # timestep interval between y1+ calculations
-yp_time = 5.0       # time gap between y1+ calculations
+set_ICs = no        # boolean for whether to set initial conditions (will overwrite restarts if not false/no)

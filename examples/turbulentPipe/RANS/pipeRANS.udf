@@ -49,6 +49,8 @@ static dfloat C_X0;
 static dfloat C_Y0;
 static dfloat C_Z0;
 
+static bool set_ICs;
+
 // -----------------------------------------------------------
 // Include .oudf
 // -----------------------------------------------------------
@@ -261,6 +263,7 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
   platform->par->extract("casedata","c_x0",C_X0);
   platform->par->extract("casedata","c_y0",C_Y0);
   platform->par->extract("casedata","c_z0",C_Z0);
+  platform->par->extract("casedata","set_ICs",set_ICs);
 }
 
 void UDF_Setup(nrs_t* nrs)
@@ -301,45 +304,50 @@ void UDF_Setup(nrs_t* nrs)
   // Initial conditions (ICs)
   // -----------------------------------------------------------
 
-  // loop over all the GLL points and assign directly to the solution arrays by
-  // indexing according to the field offset necessary to hold the data for each
-  // solution component
-  int n_gll_points = mesh->Np * mesh->Nelements;
+  if (set_ICs) {
+    if (platform->comm.mpiRank==0) 
+      printf("UDF_Setup: Setting initial conditions (ICs)\n");
 
-  for (int n = 0; n < n_gll_points; ++n)
-  {
-    // set wavenumbers
-    static dfloat kx = 5*M_PI/R_PIPE;
-    static dfloat ky = kx;
-    static dfloat kz = kx;
-    static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
-    static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
-    static dfloat kL30 = 30*(M_PI/30);
-    
-    // get gll point coordinates    
-    dfloat x = mesh->x[n] - C_X0;
-    dfloat y = mesh->y[n] - C_Y0;
-    dfloat z = mesh->z[n] - C_Z0;
-    dfloat r = sqrt(x*x + y*y);
-    
-    // parabolic axial profile
-    dfloat u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
+    // loop over all the GLL points and assign directly to the solution arrays by
+    // indexing according to the field offset necessary to hold the data for each
+    // solution component
+    int n_gll_points = mesh->Np * mesh->Nelements;
 
-    // axial perturbation
-    dfloat zAxialMod = sin(kL30*(z + 15));
-    dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
-    dfloat u_z_p = 0.1 * zAxialMod * zRadialPerturb;
+    for (int n = 0; n < n_gll_points; ++n)
+    {
+      // set wavenumbers
+      static dfloat kx = 5*M_PI/R_PIPE;
+      static dfloat ky = kx;
+      static dfloat kz = kx;
+      static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
+      static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
+      static dfloat kL30 = 30*(M_PI/30);
+      
+      // get gll point coordinates    
+      dfloat x = mesh->x[n] - C_X0;
+      dfloat y = mesh->y[n] - C_Y0;
+      dfloat z = mesh->z[n] - C_Z0;
+      dfloat r = sqrt(x*x + y*y);
+      
+      // parabolic axial profile
+      dfloat u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
 
-    // transverse perturbation
-    dfloat xTransvMod = sin(kd2*(r + R_PIPE));
-    dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
-    dfloat u_x_p = 0.1 * xTransvMod * xPerturb;
-    dfloat u_y_p = u_x_p;
+      // axial perturbation
+      dfloat zAxialMod = sin(kL30*(z + 15));
+      dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
+      dfloat u_z_p = 0.1 * zAxialMod * zRadialPerturb;
 
-    nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
-    nrs->U[n + 1 * nrs->fieldOffset] = u_y_p;
-    nrs->U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
+      // transverse perturbation
+      dfloat xTransvMod = sin(kd2*(r + R_PIPE));
+      dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
+      dfloat u_x_p = 0.1 * xTransvMod * xPerturb;
+      dfloat u_y_p = u_x_p;
 
-    nrs->P[n] = 0.0;
+      nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
+      nrs->U[n + 1 * nrs->fieldOffset] = u_y_p;
+      nrs->U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
+
+      nrs->P[n] = 0.0;
+    }
   }
 }

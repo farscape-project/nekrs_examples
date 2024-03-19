@@ -1,10 +1,10 @@
 [GENERAL]
-polynomialOrder = 5
+polynomialOrder = 9
 
+startFrom = "../Re_1.4e4_O3/pipe0.f00030"
 stopAt = endTime
-endTime = 30
-#dt = 0.001
-dt = targetCFL=0.5 + max=0.003 + initial=0.001  # adaptive timestep
+endTime = 300
+dt = targetCFL=0.5 + max=0.0015 + initial=0.0005  # adaptive timestep
 timeStepper = tombo2
 subCyclingSteps = 0
 
@@ -14,12 +14,12 @@ writeInterval = 5
 regularization = hpfrt + nModes=1 + scalingCoeff=10
 
 oudf = "../pipe.oudf"
-udf = "../pipePerturbed.udf"
-usr = "../pipe.usr"
+udf = "../pipe.udf"
+usr = "../../pipe.usr"
 
 [MESH]
 solver = none
-file = "../pipe.re2"
+file = "../../pipe.re2"
 
 connectivityTol = 0.02
 
@@ -28,7 +28,7 @@ residualTol = 1e-04
 
 [VELOCITY]
 boundaryTypeMap = inlet, outlet, wall
-viscosity = -3.8e4  # -Re (interpreted as 1/Re)
+viscosity = -6.9e4  # -Re (interpreted as 1/Re)
 density = 1.0
 residualTol = 1e-06
 
@@ -39,7 +39,4 @@ u_init = 1.0        # initial condition parabola mean velocity
 c_x0 = 0.0          # x centre
 c_y0 = 0.0          # y centre
 c_z0 = 0.0          # z centre
-zAmp = 0.1          # axial perturbation amplitude
-transvAmp = 0.1     # transverse perturbation amplitude
-yp_interval = 2000  # timestep interval between y1+ calculations
-yp_time = 5.0       # time gap between y1+ calculations
+set_ICs = no        # boolean for whether to set initial conditions (will overwrite restarts if not false/no)

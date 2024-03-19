@@ -7,9 +7,9 @@
 #SBATCH -A UKAEA-AP001-GPU
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
-#! How many (MPI) tasks will there be in total?
-#! Note probably this should not exceed the total number of GPUs in use.
-#SBATCH --ntasks=4
+#! How many (MPI) tasks will there be per node?
+#! Note probably this should not exceed the total number of GPUs per node in use.
+#SBATCH --ntasks-per-node=4
 #! Specify the number of GPUs per node (between 1 and 4; must be 4 if nodes>1).
 #! Note that the job submission script will enforce no more than 32 cpus per GPU.
 #SBATCH --gres=gpu:4
