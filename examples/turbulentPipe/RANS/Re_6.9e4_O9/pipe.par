@@ -3,8 +3,8 @@ polynomialOrder = 9
 
 startFrom = "../Re_1.4e4_O3/pipe0.f00030"
 stopAt = endTime
-endTime = 300
-dt = targetCFL=0.5 + max=0.0015 + initial=0.0005  # adaptive timestep
+endTime = 210
+dt = targetCFL=0.5 + max=0.0015 + initial=0.00025  # adaptive timestep
 timeStepper = tombo2
 subCyclingSteps = 0
 
