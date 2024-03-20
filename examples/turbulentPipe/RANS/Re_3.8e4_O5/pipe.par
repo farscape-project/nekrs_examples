@@ -39,13 +39,13 @@ boundaryTypeMap = inlet, outlet, insulated
 residualTol = 1e-06
 
 [SCALAR01] # k
-boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
+boundaryTypeMap = codedfixedvalue, zerogradient, codedfixedvalue
 residualTol = 1e-08
 rho = 1.0
 diffusivity = -3.8e4  # -Re (interpreted as 1/Re)
 
 [SCALAR02] # tau
-boundaryTypeMap = codedfixedvalue, zerogradient, zerogradient
+boundaryTypeMap = codedfixedvalue, zerogradient, codedfixedvalue
 residualTol = 1e-06
 rho = 1.0
 diffusivity = -3.8e4  # -Re (interpreted as 1/Re)

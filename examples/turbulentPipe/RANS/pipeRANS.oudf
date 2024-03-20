@@ -84,8 +84,13 @@ void velocityDirichletConditions(bcData *bc)
 
 void scalarDirichletConditions(bcData *bc)
 {
-  // temperature solve required for RANS k-tau
+  // zero Dirichlet conditions on k and tau
   bc->s = 0;
+
+  // temperature solve required for RANS k-tau
+  if (bc->scalarId == 0) {
+    bc->s = 0;
+  }
 }
 
 void pressureDirichletConditions(bcData *bc)
