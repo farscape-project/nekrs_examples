@@ -14,6 +14,9 @@ oudf = "../pipeRANS.oudf"
 udf = "../pipeRANS.udf"
 usr = "../../pipe.usr"
 
+[PROBLEMTYPE]
+equation = navierStokes+variableViscosity
+
 [MESH]
 solver = none
 file = "../../pipe.re2"
