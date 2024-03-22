@@ -2,8 +2,6 @@
 
 source ~/.nekrs_23-0_profile
 
-export NEKRS_KERNEL_DIR=$NEKRS_HOME/kernels
-
 cores=32
 
 ulimit -s unlimited
