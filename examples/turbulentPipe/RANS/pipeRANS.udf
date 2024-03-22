@@ -278,7 +278,8 @@ void UDF_Setup(nrs_t* nrs)
   udf.properties = &uservp;
   udf.sEqnSource = &userq;
 
-  const int scalarFieldStart = 1;
+  // increase this accordingly if additional scalars are included before k and tau
+  const int scalarFieldStart = 1;     // scalar ID for k
   platform->options.getArgs("VISCOSITY", mueLam);
   platform->options.getArgs("DENSITY", rho);
 

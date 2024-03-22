@@ -84,12 +84,21 @@ void velocityDirichletConditions(bcData *bc)
 
 void scalarDirichletConditions(bcData *bc)
 {
-  // zero Dirichlet conditions on k and tau
+  // set zero value as default
+  // (used on walls for all scalars, and inlet for temperature)
   bc->s = 0;
 
-  // temperature solve required for RANS k-tau
-  if (bc->scalarId == 0) {
-    bc->s = 0;
+  // set uniform non-zero inlet values for k and tau
+  if (bc->id == 1) {
+    // inlet (check ID)
+    if (bc->scalarId == 1) {
+      // k
+      bc->s = 1.0e-5;
+    }
+    if (bc->scalarId == 2) {
+      // tau
+      bc->s = 0.1;
+    }
   }
 }
 
