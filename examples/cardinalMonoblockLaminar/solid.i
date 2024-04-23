@@ -164,7 +164,7 @@ pipe_density = 8940                   # Copper [kg.m^-3]
 [Executioner]
   type = Transient
   dt = 4e-3
-  end_time = 0.4
+  end_time = 16
   nl_abs_tol = 1e-5 # change tolerances?
   nl_rel_tol = 1e-16 # change tolerances?
   petsc_options_value = 'hypre boomeramg'
@@ -174,5 +174,5 @@ pipe_density = 8940                   # Copper [kg.m^-3]
 [Outputs]
   exodus = true
   execute_on = 'timestep_end'
-  interval = 10
+  interval = 100
 []
