@@ -1,0 +1,37 @@
+//
+// nekRS User Defined File
+//
+#include "udf.hpp"
+
+#ifdef __okl__
+
+// source the user-defined OCCA kernels
+#include "monoblock.oudf"
+
+#endif
+
+void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+{
+	// print y+ values every 100 timesteps
+	if ((tstep%100)==0){
+    nek::ocopyToNek(time, tstep);
+    nek::userchk();
+  }
+
+	// print y1+ values at output steps
+  if (nrs->isOutputStep) {
+    nek::ocopyToNek(time, tstep);
+    nek::userchk(); 
+  }
+}
+void UDF_LoadKernels(occa::properties& kernelInfo)
+{
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+}
+
+void UDF_Setup(nrs_t* nrs)
+{
+}

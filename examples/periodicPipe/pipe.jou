@@ -1,0 +1,93 @@
+# ----------------------------------------------
+
+# Geometry settings:
+
+# {pipe_length=0.006}
+# {pipe_radius=0.01}
+
+# Mesh settings:
+
+# {bulk_elem_size=8.0e-4}
+# {near_wall_elem_size=3.5e-4}
+# {bl_first_layer_size=5.0e-5}
+# {bl_num_layers=3}
+# {bl_growth=1.1}
+# {bulk_growth=1.1}
+
+# ----------------------------------------------
+
+# Create geometry
+
+create Cylinder height {pipe_length} radius {pipe_radius}
+rotate Volume 1 angle 270 about Y include_merged
+
+# ----------------------------------------------
+
+# Create boundary layers
+
+create boundary_layer 1
+modify boundary_layer 1 uniform height {bl_first_layer_size} growth {bl_growth} layers {bl_num_layers}
+modify boundary_layer 1 add surface 1 volume 1
+modify boundary_layer 1 continuity on
+
+# ----------------------------------------------
+
+# Set mesh sizing
+
+#surface 2 3 size {bulk_elem_size}
+surface 1 size {near_wall_elem_size}
+
+volume 1 sizing function type skeleton min_size auto max_size auto max_gradient {bulk_growth} min_num_layers_3d 5 min_num_layers_2d 1 min_num_layers_1d 1 
+volume 1 sizing function type skeleton add size_source Surface 1 size {near_wall_elem_size} num_layers 1
+#volume 1 sizing function type skeleton add size_source Surface 2 3 size {bulk_elem_size} num_layers 5
+
+# ----------------------------------------------
+
+# Mesh the volume
+
+# trimesh (surface mesh) settings
+set trimesher coarse off
+set trimesher surface gradation {bulk_growth}
+set trimesher volume gradation {bulk_growth}
+
+set tetmesher optimize overconstrained tetrahedra on
+set tetmesher optimize overconstrained edges on
+set tetmesher optimize sliver on
+
+# generate mesh
+
+tetmesher optimize level 6
+volume 1 scheme tetmesh
+volume 1 tetmesh growth_factor {bulk_growth}
+
+mesh volume 1
+
+# ----------------------------------------------
+
+# Set mesh to 2nd order
+
+block 1 add tet in volume 1
+block 2 add wedge in volume 1
+block 1 element type tetra10
+block 2 element type wedge15
+
+# ----------------------------------------------
+
+# Create named sidesets
+
+sideset 1 add surface 3
+sideset 1 name "inlet"
+
+sideset 2 add surface 2
+sideset 2 name "outlet"
+
+sideset 3 add surface 1
+sideset 3 name "walls"
+
+# ----------------------------------------------
+
+# Export mesh
+
+export mesh "pipe.exo" overwrite
+
+# ----------------------------------------------
