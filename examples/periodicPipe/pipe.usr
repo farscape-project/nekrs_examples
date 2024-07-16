@@ -29,27 +29,27 @@ c-----------------------------------------------------------------------
       subroutine usrdat2
       include 'SIZE'
       include 'TOTAL'
-
       integer iel, ifc, id_face
-      integer i, e, f
 
-      do iel=1,nelv
+      do iel=1,nelt
       do ifc=1,2*ndim
+        ! renumber boundaries for periodic BCs
+        if (boundaryID(ifc,iel).eq.1) then
+          boundaryID(ifc,iel) = 0
+        else if (boundaryID(ifc,iel).eq.2) then
+          boundaryID(ifc,iel) = 0
+        else if (boundaryID(ifc,iel).eq.3) then
+          boundaryID(ifc,iel) = 1
+        endif
+        
+        ! set up nek5000 BCs (for yPlus)
         id_face = bc(5,ifc,iel,1)
-        if (id_face.eq.1) then                 !inlet
-           cbc(ifc,iel,1) = 'v  '
+        if (id_face.eq.1) then             !walls
+           cbc(ifc,iel,1) = 'W  '
            boundaryID(ifc,iel)  = 1
            boundaryIDt(ifc,iel) = 1
-        elseif (id_face.eq.2) then             !outlet
-           cbc(ifc,iel,1) = 'o  '
-           boundaryID(ifc,iel)  = 2
-           boundaryIDt(ifc,iel) = 2
-        elseif (id_face.eq.3) then             !walls
-           cbc(ifc,iel,1) = 'W  '
-           boundaryID(ifc,iel)  = 3
-           boundaryIDt(ifc,iel) = 3
         else
-           cbc(ifc,iel,1) = 'E  '              !everything else
+           cbc(ifc,iel,1) = 'E  '          !everything else
            boundaryID(ifc,iel)  = 0
            boundaryIDt(ifc,iel) = 0
         endif
