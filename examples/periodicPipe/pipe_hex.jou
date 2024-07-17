@@ -19,6 +19,7 @@
 
 create Cylinder height {pipe_length} radius {pipe_radius}
 rotate Volume 1 angle 270 about Y include_merged
+block 1 add volume 1
 
 # ----------------------------------------------
 
@@ -45,6 +46,15 @@ block 1 element type hex20
 
 surface 3 size {cross_section_elem_size}
 mesh surface 3
+
+Volume 1  copy reflect x
+copy mesh surface 6 onto  surface 2 source curve 4 source vertex 4 target curve 1 target vertex 1
+delete volume 2
+delete boundary_layer 1
+create boundary_layer 1
+modify boundary_layer 1 uniform height {bl_first_layer_size} growth {bl_growth} layers {bl_num_layers}
+modify boundary_layer 1 add surface 1 volume 1
+modify boundary_layer 1 continuity on
 
 # ----------------------------------------------
 
