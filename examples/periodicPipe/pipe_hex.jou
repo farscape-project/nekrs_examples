@@ -1,0 +1,75 @@
+# ----------------------------------------------
+
+# Geometry settings:
+
+# {pipe_length=0.006}
+# {pipe_radius=0.01}
+
+# Mesh settings:
+
+# {axial_elem_size=1.0e-3}
+# {cross_section_elem_size=1.0e-3}
+# {bl_first_layer_size=1.2e-4}
+# {bl_num_layers=12}
+# {bl_growth=1.15}
+
+# ----------------------------------------------
+
+# Create geometry
+
+create Cylinder height {pipe_length} radius {pipe_radius}
+rotate Volume 1 angle 270 about Y include_merged
+
+# ----------------------------------------------
+
+# Create boundary layers
+
+create boundary_layer 1
+modify boundary_layer 1 uniform height {bl_first_layer_size} growth {bl_growth} layers {bl_num_layers}
+modify boundary_layer 1 add surface 1 volume 1
+modify boundary_layer 1 continuity on
+
+# ----------------------------------------------
+
+# Set mesh schemes and element type
+
+surface 2 3 scheme pave
+volume 1 redistribute nodes off
+volume 1 scheme Sweep source surface 3 target surface 2 sweep transform least squares
+volume 1 autosmooth target on fixed imprints off smart smooth off
+block 1 element type hex20
+
+# ----------------------------------------------
+
+# Set cross-sectional mesh size and mesh inlet surface
+
+surface 3 size {cross_section_elem_size}
+mesh surface 3
+
+# ----------------------------------------------
+
+# Set axial mesh size and mesh volume by sweeping
+
+surface 1 size {axial_elem_size}
+mesh volume 1
+
+# ----------------------------------------------
+
+# Create named sidesets
+
+sideset 1 add surface 3
+sideset 1 name "inlet"
+
+sideset 2 add surface 2
+sideset 2 name "outlet"
+
+sideset 3 add surface 1
+sideset 3 name "walls"
+
+# ----------------------------------------------
+
+# Export mesh
+
+export mesh "pipe_hex.exo" overwrite
+
+# ----------------------------------------------
