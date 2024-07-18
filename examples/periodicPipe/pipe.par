@@ -1,24 +1,24 @@
-[OCCA]
-
 [GENERAL]
 polynomialOrder = 3
 
 stopAt = endTime
-endTime = 5e-2
-dt = 5.0e-6
+endTime = 1.0
+dt = 8.0e-5
 timeStepper = tombo2
 subCyclingSteps = 0
 writeControl = simulationTime
-writeInterval = 4.0e-1          # simulation output time interval
+writeInterval = 1.0e-1          # simulation output time interval
 
 constFlowRate = meanVelocity=0.9 + direction=X
 
 [MESH]
 solver = none                   # no moving mesh solve
-connectivityTol = 1e-5          # absolute mesh connectivity tolerance [m]
+connectivityTol = 0.02          # absolute mesh connectivity tolerance [m]
+file = "pipe_hex.re2"
 
 [PRESSURE]
 residualTol = 5e-6              # absolute pressure tolerance [Pa]
+solver = pcg                    # default PFGMRES gives an error!
 
 [VELOCITY]
 boundaryTypeMap = w             # no-slip walls (periodic inlet/outlet)

@@ -12,17 +12,6 @@
 
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
-	// print y+ values every 100 timesteps
-	if ((tstep%100)==0){
-    nek::ocopyToNek(time, tstep);
-    nek::userchk();
-  }
-
-	// print y1+ values at output steps
-  if (nrs->isOutputStep) {
-    nek::ocopyToNek(time, tstep);
-    nek::userchk(); 
-  }
 }
 void UDF_LoadKernels(occa::properties& kernelInfo)
 {

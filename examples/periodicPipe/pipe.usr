@@ -1,17 +1,10 @@
 c-----------------------------------------------------------------------
-      include 'yPlus_limits.f'
 
 c-----------------------------------------------------------------------
       subroutine userchk
 
       include 'SIZE'
       include 'TOTAL'
-
-      real wd
-      common /walldist/ wd(lx1,ly1,lz1,lelv)
-
-      write(*,*) '                 minimum      maximum      average'
-      call y_p_limits(wd,.true.)
 
       return
       end
@@ -31,27 +24,15 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       integer iel, ifc, id_face
 
+      ! renumber boundaries for periodic BCs
       do iel=1,nelt
       do ifc=1,2*ndim
-        ! renumber boundaries for periodic BCs
         if (boundaryID(ifc,iel).eq.1) then
           boundaryID(ifc,iel) = 0
         else if (boundaryID(ifc,iel).eq.2) then
           boundaryID(ifc,iel) = 0
         else if (boundaryID(ifc,iel).eq.3) then
           boundaryID(ifc,iel) = 1
-        endif
-        
-        ! set up nek5000 BCs (for yPlus)
-        id_face = bc(5,ifc,iel,1)
-        if (id_face.eq.1) then             !walls
-           cbc(ifc,iel,1) = 'W  '
-           boundaryID(ifc,iel)  = 1
-           boundaryIDt(ifc,iel) = 1
-        else
-           cbc(ifc,iel,1) = 'E  '          !everything else
-           boundaryID(ifc,iel)  = 0
-           boundaryIDt(ifc,iel) = 0
         endif
       enddo
       enddo
@@ -64,11 +45,6 @@ c-----------------------------------------------------------------------
       implicit none
       include 'SIZE'
       include 'TOTAL'
-
-      real wd
-      common /walldist/ wd(lx1*ly1*lz1*lelv)
-
-      call cheap_dist(wd,1,'W  ')
 
       return
       end
