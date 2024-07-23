@@ -1,0 +1,30 @@
+diff --git a/examples/periodicPipe/pipe.udf b/examples/periodicPipe/pipe.udf
+index 7598384..fe15fbb 100644
+--- a/examples/periodicPipe/pipe.udf
++++ b/examples/periodicPipe/pipe.udf
+@@ -1,7 +1,6 @@
+ //
+ // nekRS User Defined File
+ //
+-#include "udf.hpp"
+ 
+ #ifdef __okl__
+ 
+@@ -10,8 +9,8 @@
+ 
+ #endif
+ 
+-void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
++void UDF_ExecuteStep(double time, int tstep)
+ {
+ }
+
+ void UDF_LoadKernels(occa::properties& kernelInfo)
+@@ -21,6 +20,6 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
+ {
+ }
+ 
+-void UDF_Setup(nrs_t* nrs)
++void UDF_Setup()
+ {
+ }

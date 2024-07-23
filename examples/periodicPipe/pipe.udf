@@ -13,6 +13,7 @@
 void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 {
 }
+
 void UDF_LoadKernels(occa::properties& kernelInfo)
 {
 }
