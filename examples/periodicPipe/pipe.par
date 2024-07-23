@@ -3,23 +3,25 @@ polynomialOrder = 3
 
 stopAt = endTime
 endTime = 50.0                  # simulation end time [ND]
-dt = 4.25e-3                    # simulation timestep [ND]
+dt = 4.0e-3                     # simulation timestep [ND] (pipe_hex.re2)
+#dt = 2.0e-4                     # simulation timestep [ND] (pipe.re2)
 timeStepper = tombo2            # timestepping scheme
 subCyclingSteps = 0
 writeControl = simulationTime
 writeInterval = 5.0             # simulation output time interval [ND]
 
 constFlowRate = meanVelocity=1.0 + direction=X
+regularization = hpfrt + nModes=1 + scalingCoeff=10
 
 [MESH]
 file = "pipe_hex.re2"
 
 [PRESSURE]
-residualTol = 5e-6              # absolute pressure tolerance [ND]
+residualTol = 1e-4              # absolute pressure tolerance [ND]
 solver = pcg                    # default PFGMRES gives an error!
 
 [VELOCITY]
 boundaryTypeMap = w             # no-slip walls (periodic inlet/outlet)
 viscosity = -2.0e4              # dynamic viscosity=1/Re (-Re equivalent to 1/Re) [ND]
 density = 1.0                   # density=1 [ND]
-residualTol = 1.0e-8            # absolute velocity tolerance [ND]
+residualTol = 1.0e-6            # absolute velocity tolerance [ND]
