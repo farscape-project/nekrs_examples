@@ -2,14 +2,15 @@
 
 # Geometry settings:
 
-# {pipe_length=0.006}
-# {pipe_radius=0.01}
+# {Lref=0.02}
+# {pipe_length=0.006/Lref}
+# {pipe_radius=0.01/Lref}
 
 # Mesh settings:
 
-# {axial_elem_size=1.0e-3}
-# {cross_section_elem_size=1.0e-3}
-# {bl_first_layer_size=1.2e-4}
+# {axial_elem_size=1.0e-3/Lref}
+# {cross_section_elem_size=1.0e-3/Lref}
+# {bl_first_layer_size=1.2e-4/Lref}
 # {bl_num_layers=12}
 # {bl_growth=1.15}
 
