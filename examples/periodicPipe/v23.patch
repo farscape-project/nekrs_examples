@@ -1,0 +1,28 @@
+# Add velocity initialisation; otherwise default PGMRES solver for pressure doesn't work.
+diff --git a/examples/periodicPipe/pipe.udf b/examples/periodicPipe/pipe.udf
+index fb8c97a..e6ccf22 100644
+--- a/examples/periodicPipe/pipe.udf
++++ b/examples/periodicPipe/pipe.udf
+@@ -24,4 +24,22 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
+ 
+ void UDF_Setup(nrs_t* nrs)
+ {
++  // Called once after initialising the mesh, boundary fields etc.
++
++  mesh_t * mesh = nrs->meshV;
++
++  // -----------------------------------------------------------
++  // Initial conditions (ICs)
++  // -----------------------------------------------------------
++
++  if (platform->comm.mpiRank==0)
++    printf("UDF_Setup: Setting initial conditions (ICs)\n");
++  int n_gll_points = mesh->Np * mesh->Nelements;
++  for (int n = 0; n < n_gll_points; ++n)
++  {
++    nrs->U[n + 0 * nrs->fieldOffset] = 0.0;
++    nrs->U[n + 1 * nrs->fieldOffset] = 0.0;
++    nrs->U[n + 2 * nrs->fieldOffset] = 1.0;
++    nrs->P[n] = 0.0;
++  }
+ }
