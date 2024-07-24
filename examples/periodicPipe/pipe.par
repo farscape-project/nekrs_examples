@@ -18,7 +18,6 @@ file = "pipe_hex.re2"
 
 [PRESSURE]
 residualTol = 1e-4              # absolute pressure tolerance [ND]
-solver = pcg                    # default PFGMRES gives an error!
 
 [VELOCITY]
 boundaryTypeMap = w             # no-slip walls (periodic inlet/outlet)

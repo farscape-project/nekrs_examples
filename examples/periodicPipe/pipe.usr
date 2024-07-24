@@ -1,10 +1,17 @@
 c-----------------------------------------------------------------------
+      include 'yPlus_limits.f'
 
 c-----------------------------------------------------------------------
       subroutine userchk
 
       include 'SIZE'
       include 'TOTAL'
+
+      real wd
+      common /walldist/ wd(lx1,ly1,lz1,lelv)
+
+      write(*,*) '                 minimum      maximum      average'
+      call y_p_limits(wd,.true.)
 
       return
       end
@@ -33,6 +40,8 @@ c-----------------------------------------------------------------------
           boundaryID(ifc,iel) = 0
         else if (boundaryID(ifc,iel).eq.3) then
           boundaryID(ifc,iel) = 1
+          cbc(ifc,iel,1) = 'W  ' ! for y+ calculation
+
         endif
       enddo
       enddo
@@ -45,6 +54,11 @@ c-----------------------------------------------------------------------
       implicit none
       include 'SIZE'
       include 'TOTAL'
+
+      real wd
+      common /walldist/ wd(lx1*ly1*lz1*lelv)
+
+      call cheap_dist(wd,1,'W  ')
 
       return
       end
