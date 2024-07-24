@@ -1,6 +1,5 @@
 # Add velocity initialisation; otherwise default PGMRES solver for pressure doesn't work.
 diff --git a/examples/periodicPipe/pipe.udf b/examples/periodicPipe/pipe.udf
-index fb8c97a..e6ccf22 100644
 --- a/examples/periodicPipe/pipe.udf
 +++ b/examples/periodicPipe/pipe.udf
 @@ -24,4 +24,22 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)

@@ -1,6 +1,5 @@
 # Fix for running on "next" branch (as built on 10/07/2024 DD/MM/YYYY)
 diff --git a/examples/periodicPipe/pipe.udf b/examples/periodicPipe/pipe.udf
-index 7598384..fe15fbb 100644
 --- a/examples/periodicPipe/pipe.udf
 +++ b/examples/periodicPipe/pipe.udf
 @@ -1,7 +1,6 @@
@@ -11,17 +10,16 @@ index 7598384..fe15fbb 100644
  
  #ifdef __okl__
  
-@@ -10,8 +9,8 @@
+@@ -10,7 +9,7 @@
  
  #endif
  
 -void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
 +void UDF_ExecuteStep(double time, int tstep)
  {
- }
-
- void UDF_LoadKernels(occa::properties& kernelInfo)
-@@ -21,6 +20,6 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
+   // print y1+ values at output steps
+   if (nrs->isOutputStep)
+@@ -28,6 +27,6 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
  {
  }
  
