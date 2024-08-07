@@ -7,11 +7,12 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      real wd
-      common /walldist/ wd(lx1,ly1,lz1,lelv)
+      logical ifexport
+      common /walldist/ ywd(lx1,ly1,lz1,lelt)
+      real ywd
 
-      write(*,*) '                 minimum      maximum      average'
-      call y_p_limits(wd,.true.)
+      ifexport = .true.
+      if(istep.gt.0) call y_p_limitsRS(ywd,ifexport)
 
       return
       end
@@ -67,14 +68,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine usrdat3
 
-      implicit none
       include 'SIZE'
       include 'TOTAL'
 
-      real wd
-      common /walldist/ wd(lx1*ly1*lz1*lelv)
+      common /walldist/ ywd(lx1,ly1,lz1,lelt)
+      real ywd
 
-      call cheap_dist(wd,1,'W  ')
+      call cheap_dist(ywd,1,'W  ')
 
       return
       end
