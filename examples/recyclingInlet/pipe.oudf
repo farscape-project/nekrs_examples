@@ -1,0 +1,75 @@
+// -----------------------------------------------------------
+// Recycling inlet kernels
+// -----------------------------------------------------------
+
+@kernel void copyBoundaryPoints(const dlong Npart,
+                                @ restrict const dlong *BdryToV,
+                                @ restrict const dfloat *X,
+                                @ restrict const dfloat *Y,
+                                @ restrict const dfloat *Z,
+                                @ restrict dfloat *Xpart,
+                                @ restrict dfloat *Ypart,
+                                @ restrict dfloat *Zpart)
+{
+  for (dlong n = 0; n < Npart; ++n; @tile(256, @outer, @inner)) {
+    if (n < Npart) {
+      const dlong v = BdryToV[n];
+      Xpart[n] = X[v];
+      Ypart[n] = Y[v];
+      Zpart[n] = Z[v];
+    }
+  } 
+}
+
+@kernel void pasteInletVelocity(const dlong Npart,
+                                const dlong fieldOffset,
+                                @ restrict const dlong *BdryToV,
+                                @ restrict const dfloat *Upart,
+                                @ restrict dfloat *U)
+{ 
+  for (dlong n = 0; n < Npart; ++n; @tile(256, @outer, @inner)) {
+    if (n < Npart) {
+      const dlong v = BdryToV[n];
+      U[0*fieldOffset + v] = Upart[0*Npart + n];
+      U[1*fieldOffset + v] = Upart[1*Npart + n];
+      U[2*fieldOffset + v] = Upart[2*Npart + n];
+    }   
+  } 
+}
+
+@kernel void scaleInletVelocity(const dlong Npart,
+                                const dlong fieldOffset,
+                                const dfloat scale,
+                                @ restrict const dlong *BdryToV,
+                                @ restrict dfloat *U)
+{ 
+  for (dlong n = 0; n < Npart; ++n; @tile(256, @outer, @inner)) {
+    if (n < Npart) {
+      const dlong v = BdryToV[n];
+      U[0*fieldOffset + v] *= scale;
+      U[1*fieldOffset + v] *= scale;
+      U[2*fieldOffset + v] *= scale;
+    } 
+  }
+}
+
+// -----------------------------------------------------------
+// Boundary conditions (BCs)
+// -----------------------------------------------------------
+
+void velocityDirichletConditions(bcData *bc)
+{
+  // set velocity with recycling inlet
+  bc->u = bc->usrwrk[bc->idM + 0 * bc->fieldOffset];
+  bc->v = bc->usrwrk[bc->idM + 1 * bc->fieldOffset];
+  bc->w = bc->usrwrk[bc->idM + 2 * bc->fieldOffset];
+}
+
+void pressureDirichletConditions(bcData *bc)
+{
+  // Stabilized outflow (Dong et al)
+  const dfloat iU0delta = 10.0;
+  const dfloat un = bc->u*bc->nx + bc->v*bc->ny + bc->w*bc->nz;
+  const dfloat s0 = 0.5 * (1.0 - tanh(un*iU0delta));
+  bc->p = -0.5 * (bc->u*bc->u + bc->v*bc->v + bc->w*bc->w) * s0;
+}
