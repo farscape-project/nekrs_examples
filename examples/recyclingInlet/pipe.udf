@@ -33,12 +33,6 @@ static int Nblock;
 static dfloat R_PIPE;
 static dfloat U_INFLOW;
 static dfloat U_INIT;
-static dfloat P_OUTLET;
-static dfloat C_X0;
-static dfloat C_Y0;
-static dfloat C_Z0;
-
-static bool set_ICs;
 
 // -----------------------------------------------------------
 // Include .oudf
@@ -178,14 +172,14 @@ dfloat parabolic_vel(dfloat u, dfloat r, dfloat rPipe)
 // Core NekRS functions
 // -----------------------------------------------------------
 
-void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+void UDF_ExecuteStep(dfloat time, int tstep)
 {
   // Recycling inlet
   updateRecycledVelocity(nrs);
 
   // print y1+ values at output steps
-  if (nrs->isOutputStep) {
-    nek::ocopyToNek(time, tstep);
+  if (nrs->checkpointStep) {
+    nrs->copyToNek(time, tstep);
     nek::userchk(); 
   }
 }
@@ -215,13 +209,9 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
   platform->par->extract("casedata","r_pipe",R_PIPE);
   platform->par->extract("casedata","u_inflow",U_INFLOW);
   platform->par->extract("casedata","u_init",U_INIT);
-  platform->par->extract("casedata","c_x0",C_X0);
-  platform->par->extract("casedata","c_y0",C_Y0);
-  platform->par->extract("casedata","c_z0",C_Z0);
-  platform->par->extract("casedata","set_ICs",set_ICs);
 }
 
-void UDF_Setup(nrs_t* nrs)
+void UDF_Setup()
 {
   // Called once after initialising the mesh, boundary fields etc.
   
@@ -247,50 +237,55 @@ void UDF_Setup(nrs_t* nrs)
   // Initial conditions (ICs)
   // -----------------------------------------------------------
   
-  if (set_ICs) {
-    if (platform->comm.mpiRank==0) 
-      printf("UDF_Setup: Setting initial conditions (ICs)\n");
+  if (platform->options.getArgs("RESTART FILE NAME").empty()) { // IC
 
-    // loop over all the GLL points and assign directly to the solution arrays by
-    // indexing according to the field offset necessary to hold the data for each
-    // solution component
-    int n_gll_points = mesh->Np * mesh->Nelements;
+    // set wavenumbers
+    static dfloat kx = 5*M_PI/R_PIPE;
+    static dfloat ky = kx;
+    static dfloat kz = kx;
+    static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
+    static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
+    static dfloat kL30 = 30*(M_PI/30);
 
-    for (int n = 0; n < n_gll_points; ++n)
-    {
-      // set wavenumbers
-      static dfloat kx = 5*M_PI/R_PIPE;
-      static dfloat ky = kx;
-      static dfloat kz = kx;
-      static dfloat kd2 = 2*(M_PI/(2*R_PIPE));
-      static dfloat kd16 = 16*(M_PI/(2*R_PIPE));
-      static dfloat kL30 = 30*(M_PI/30);
-      
-      // get gll point coordinates    
-      dfloat x = mesh->x[n] - C_X0;
-      dfloat y = mesh->y[n] - C_Y0;
-      dfloat z = mesh->z[n] - C_Z0;
-      dfloat r = sqrt(x*x + y*y);
-      
+    // velocity
+    auto mesh = nrs->mesh;
+    auto [x, y, z] = mesh->xyzHost(); // x[n], y[n], z[n]
+    std::vector<dfloat> U(mesh->dim * nrs->fieldOffset, 0.0);
+    std::vector<dfloat> P(nrs->fieldOffset, 0.0);
+
+    for (int n = 0; n < mesh->Nlocal; n++) {
+
+      // coordinates
+      auto xn = x[n];
+      auto yn = y[n];
+      auto zn = z[n];
+      auto r = sqrt(xn*xn + yn*yn);
+
       // parabolic axial profile
-      dfloat u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
+      auto u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
 
       // axial perturbation
-      dfloat zAxialMod = sin(kL30*(z + 15));
+      dfloat zAxialMod = sin(kL30*(zn + 15));
       dfloat zRadialPerturb = sin(kd16*(r+R_PIPE));
       dfloat u_z_p = 0.1 * zAxialMod * zRadialPerturb;
 
       // transverse perturbation
       dfloat xTransvMod = sin(kd2*(r + R_PIPE));
-      dfloat xPerturb = sin(kx*x) * sin(ky*y) * sin(kz*z);
+      dfloat xPerturb = sin(kx*xn) * sin(ky*yn) * sin(kz*zn);
       dfloat u_x_p = 0.1 * xTransvMod * xPerturb;
       dfloat u_y_p = u_x_p;
 
-      nrs->U[n + 0 * nrs->fieldOffset] = u_x_p;
-      nrs->U[n + 1 * nrs->fieldOffset] = u_y_p;
-      nrs->U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
+      U[n + 0 * nrs->fieldOffset] = u_x_p;
+      U[n + 1 * nrs->fieldOffset] = u_y_p;
+      U[n + 2 * nrs->fieldOffset] = u_z_0 + u_z_p;
 
-      nrs->P[n] = 0.0;
+      P[n] = 0.0;
     }
+
+    nrs->o_U.copyFrom(U.data(), U.size());
+    nrs->o_P.copyFrom(P.data(), P.size());
+
+    U.clear();
+    P.clear();
   }
 }

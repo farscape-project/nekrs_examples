@@ -30,7 +30,3 @@ residualTol = 1e-06
 r_pipe = 0.5        # pipe radius
 u_inflow = 1.0      # inlet mean velocity
 u_init = 1.0        # initial condition parabola mean velocity
-c_x0 = 0.0          # x centre
-c_y0 = 0.0          # y centre
-c_z0 = 0.0          # z centre
-set_ICs = yes       # boolean for whether to set initial conditions (will overwrite restarts if not false/no)

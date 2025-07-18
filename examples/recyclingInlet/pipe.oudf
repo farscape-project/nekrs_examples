@@ -57,7 +57,7 @@
 // Boundary conditions (BCs)
 // -----------------------------------------------------------
 
-void velocityDirichletConditions(bcData *bc)
+void codedFixedValueVelocity(bcData *bc)
 {
   // set velocity with recycling inlet
   bc->u = bc->usrwrk[bc->idM + 0 * bc->fieldOffset];
@@ -65,7 +65,7 @@ void velocityDirichletConditions(bcData *bc)
   bc->w = bc->usrwrk[bc->idM + 2 * bc->fieldOffset];
 }
 
-void pressureDirichletConditions(bcData *bc)
+void codedFixedValuePressure(bcData *bc)
 {
   // Stabilized outflow (Dong et al)
   const dfloat iU0delta = 10.0;
