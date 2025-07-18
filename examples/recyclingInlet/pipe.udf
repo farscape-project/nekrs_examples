@@ -176,12 +176,6 @@ void UDF_ExecuteStep(dfloat time, int tstep)
 {
   // Recycling inlet
   updateRecycledVelocity(nrs);
-
-  // print y1+ values at output steps
-  if (nrs->checkpointStep) {
-    nrs->copyToNek(time, tstep);
-    nek::userchk(); 
-  }
 }
 
 void UDF_LoadKernels(occa::properties& kernelInfo)
