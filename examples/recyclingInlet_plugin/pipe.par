@@ -3,7 +3,7 @@ polynomialOrder = 3
 
 stopAt = endTime
 endTime = 40
-dt = targetCFL=1.5 + max=0.1 + initial=0.0025  # adaptive timestep
+dt = targetCFL=2.5 + max=0.1 + initial=0.0025  # adaptive timestep
 timeStepper = tombo2
 
 writeControl = simulationTime
