@@ -2,17 +2,17 @@
 
 # Mesh settings:
 
-# {axial_elem_size=0.07}
-# {cross_section_elem_size=0.07}
-# {bl_first_layer_size=0.0035}
-# {bl_num_layers=12}
+# {axial_elem_size=0.1}
+# {cross_section_elem_size=0.08}
+# {bl_first_layer_size=0.0045}
+# {bl_num_layers=10}
 # {bl_growth=1.25}
 
 # ----------------------------------------------
 
 # Create geometry and add to block 1
 
-create Cylinder height 5 radius 0.5
+create Cylinder height 2.5 radius 0.5
 block 1 add vol 1
 
 # ----------------------------------------------
