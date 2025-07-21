@@ -27,6 +27,6 @@ density = 1.0
 residualTol = 1e-06
 
 [CASEDATA]
-r_pipe = 0.5        # pipe radius
-u_inflow = 1.0      # inlet mean velocity
-u_init = 1.0        # initial condition parabola mean velocity
+r_pipe = 0.5                    # pipe radius
+u_inflow = 1.0                  # inlet mean velocity
+recyc_plane_frac_offset = 0.25  # fraction of pipe length from inlet to recycling plane

@@ -11,7 +11,7 @@
 
 static dfloat R_PIPE;
 static dfloat U_INFLOW;
-static dfloat U_INIT;
+static dfloat FRAC_OFFSET;
 
 // -----------------------------------------------------------
 // Include .oudf
@@ -53,7 +53,7 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
 {
   platform->par->extract("casedata","r_pipe",R_PIPE);
   platform->par->extract("casedata","u_inflow",U_INFLOW);
-  platform->par->extract("casedata","u_init",U_INIT);
+  platform->par->extract("casedata","recyc_plane_frac_offset",FRAC_OFFSET);
 }
 
 void UDF_Setup()
@@ -91,7 +91,7 @@ void UDF_Setup()
       auto r = sqrt(xn*xn + yn*yn);
 
       // parabolic axial profile
-      auto u_z_0 = parabolic_vel(U_INIT, r, R_PIPE);
+      auto u_z_0 = parabolic_vel(U_INFLOW, r, R_PIPE);
 
       // axial perturbation
       dfloat zAxialMod = sin(kL30*(zn + 15));
@@ -130,9 +130,7 @@ void UDF_Setup()
               platform->linAlg->max(mesh->Nlocal, mesh->o_z, platform->comm.mpiComm) -
               platform->linAlg->min(mesh->Nlocal, mesh->o_z, platform->comm.mpiComm)
             );
-  const dfloat zRecyclingOffset = -0.25 * zLen;
+  const dfloat zRecyclingOffset = - FRAC_OFFSET * zLen;
 
-  const dfloat u_mean = 1.0;
-
-  velRecycling::setup(nrs->o_usrwrk, 0.0, 0.0, zRecycLayer, inletID, u_mean);
+  velRecycling::setup(nrs->o_usrwrk, 0.0, 0.0, zRecyclingOffset, inletID, U_INFLOW);
 }
