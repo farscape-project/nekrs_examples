@@ -3,6 +3,7 @@
 //
 
 #include "udf.hpp"
+#include "velRecycling.hpp"
 
 // -----------------------------------------------------------
 // General user declarations
@@ -38,6 +39,10 @@ dfloat parabolic_vel(dfloat u, dfloat r, dfloat rPipe)
 
 void UDF_ExecuteStep(dfloat time, int tstep)
 {
+  // -----------------------------------------------------------
+  // Velocity Recycling Inlet (copy to inlet)
+  // -----------------------------------------------------------
+  velRecycling::copy();
 }
 
 void UDF_LoadKernels(occa::properties& kernelInfo)
@@ -112,4 +117,22 @@ void UDF_Setup()
     U.clear();
     P.clear();
   }
+
+  // -----------------------------------------------------------
+  // Velocity Recycling Inlet (setup)
+  // -----------------------------------------------------------
+
+  nrs->o_usrwrk.resize(nrs->NVfields * nrs->fieldOffset);
+
+  const int inletID = 1;
+
+  const auto zLen = abs(
+              platform->linAlg->max(mesh->Nlocal, mesh->o_z, platform->comm.mpiComm) -
+              platform->linAlg->min(mesh->Nlocal, mesh->o_z, platform->comm.mpiComm)
+            );
+  const dfloat zRecyclingOffset = -0.25 * zLen;
+
+  const dfloat u_mean = 1.0;
+
+  velRecycling::setup(nrs->o_usrwrk, 0.0, 0.0, zRecycLayer, inletID, u_mean);
 }
