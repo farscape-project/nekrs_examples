@@ -59,8 +59,8 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
 void UDF_Setup()
 {
   // Called once after initialising the mesh, boundary fields etc.
-  
-  mesh_t * mesh = nrs->meshV;
+
+  auto mesh = nrs->mesh;
 
   // -----------------------------------------------------------
   // Initial conditions (ICs)
@@ -77,7 +77,6 @@ void UDF_Setup()
     static dfloat kL30 = 30*(M_PI/30);
 
     // velocity
-    auto mesh = nrs->mesh;
     auto [x, y, z] = mesh->xyzHost(); // x[n], y[n], z[n]
     std::vector<dfloat> U(mesh->dim * nrs->fieldOffset, 0.0);
     std::vector<dfloat> P(nrs->fieldOffset, 0.0);
