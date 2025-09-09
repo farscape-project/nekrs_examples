@@ -19,7 +19,7 @@ void UDF_ExecuteStep(dfloat time, int tstep)
 {
 }
 
-void UDF_LoadKernels(occa::properties& kernelInfo)
+void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
 {
 	kernelInfo.define("rPipe")		= R_PIPE;
 	kernelInfo.define("uInflow")	= U_INFLOW;
