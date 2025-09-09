@@ -21,10 +21,10 @@ void UDF_ExecuteStep(dfloat time, int tstep)
 
 void UDF_LoadKernels(occa::properties& kernelInfo)
 {
-	kernelInfo["defines/rPipe"]		= R_PIPE;
-	kernelInfo["defines/uInflow"]	= U_INFLOW;
-	kernelInfo["defines/cx0"]			= C_X0;
-	kernelInfo["defines/cy0"]			= C_Y0;
+	kernelInfo.define("rPipe")		= R_PIPE;
+	kernelInfo.define("uInflow")	= U_INFLOW;
+	kernelInfo.define("cx0")			= C_X0;
+	kernelInfo.define("cy0")			= C_Y0;
 }
 
 void UDF_Setup0(MPI_Comm comm, setupAide &options)
