@@ -15,7 +15,7 @@ static dfloat C_Y0;
 
 #endif
 
-void UDF_ExecuteStep(nrs_t *nrs, dfloat time, int tstep)
+void UDF_ExecuteStep(dfloat time, int tstep)
 {
 }
 
@@ -35,6 +35,6 @@ void UDF_Setup0(MPI_Comm comm, setupAide &options)
 	platform->par->extract("casedata","c_y0",C_Y0);
 }
 
-void UDF_Setup(nrs_t* nrs)
+void UDF_Setup()
 {
 }
